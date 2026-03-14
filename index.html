@@ -175,16 +175,17 @@ async function rContratos(){
   document.getElementById('rl').innerHTML='<div class="loading">Buscando contratos...</div>';
   try{
     const from=(page-1)*PER,to=from+PER-1;
-    let query=sb.from('contratos').select('*',{count:'exact'});
+    let query=sb.from('contratos').select('*');
     if(q&&q.length>=2){
       query=query.or(`proveedor.ilike.%${q}%,institucion.ilike.%${q}%,titulo.ilike.%${q}%`);
     }
-    const{data,error,count}=await query.order('monto',{ascending:false}).range(from,to);
+    const{data,error}=await query.order('monto',{ascending:false}).range(from,to);
     if(error)throw error;
-    const total=count||0;
-    document.getElementById('s-found').textContent=total>=1000?(total/1000).toFixed(0)+'K':total;
-    document.getElementById('rh').innerHTML=`${total.toLocaleString()} contrato(s)${q?` para <span>"${q}"</span>`:'— <span>mayor monto primero</span>'}`;
-    rPag(page,Math.ceil(total/PER));
+    const hasMore=data&&data.length===PER;
+    const total=q?`${from+data.length}${hasMore?'+':''}`:'579,001';
+    document.getElementById('s-found').textContent=total;
+    document.getElementById('rh').innerHTML=q?`Mostrando resultados para <span>"${q}"</span>`:'579,001 contratos — <span>mayor monto primero</span>';
+    rPag(page,hasMore?page+1:page);
     document.getElementById('rl').innerHTML=data&&data.length?data.map(d=>`
       <div class="card">
         <div class="ct"><div class="ctitle">${hl(d.titulo||'Sin título',q)}</div><span class="badge b-c">Contrato</span></div>
@@ -271,7 +272,7 @@ async function rPersona(){
   try{
     const[eR,cR,fR]=await Promise.all([
       sb.from('empresas').select('*').ilike('representante',`%${q}%`).order('monto_total',{ascending:false}).limit(10),
-      sb.from('contratos').select('*').or(`proveedor.ilike.%${q}%,titulo.ilike.%${q}%`).order('monto',{ascending:false}).limit(10),
+      sb.from('contratos').select('*').or(`proveedor.ilike.%${q}%,titulo.ilike.%${q}%`).order('monto',{ascending:false}).limit(5),
       sb.from('funcionarios').select('*').ilike('nombre',`%${q}%`).order('salario',{ascending:false}).limit(10),
     ]);
     const emp=eR.data||[],cont=cR.data||[],func=fR.data||[];
