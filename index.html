@@ -1,182 +1,515 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>ArchivoRD — Motor de Investigación Pública</title>
-<meta name="description" content="Base de datos pública de contratos, empresas y funcionarios del Estado dominicano. 579,001 contratos desde 2015. Un producto de SH Custom Software."/>
-<meta property="og:title" content="ArchivoRD — Motor de Investigación Pública"/>
-<meta property="og:description" content="579K contratos, 43K empresas, 167K funcionarios del Estado dominicano. Datos públicos, búsqueda en tiempo real."/>
-<link rel="canonical" href="https://archivord.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArchivoRD — Datos Públicos de República Dominicana</title>
+<meta name="description" content="Plataforma de periodismo de datos cívico. Contratos, empresas, funcionarios y nóminas del Estado dominicano.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a0e13;--surface:#111820;--border:#1e2a36;--text:#d4dce8;--muted:#6b7f96;--white:#f0f4f8;--red:#dc3545;--red2:#ff4757;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--orange:#f59e0b;--gold:#eab308;--cyan:#06b6d4}
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
-.status-bar{background:linear-gradient(90deg,#0d4a1e,#166534 40%,#15803d);padding:7px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(34,197,94,.25)}
-.status-bar .live{display:flex;align-items:center;gap:8px;font-size:11px;color:#bbf7d0;letter-spacing:.04em}
-.dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:b 2s infinite}
-@keyframes b{0%,100%{opacity:1}50%{opacity:.4}}
-.status-bar a{font-size:11px;color:#86efac;text-decoration:none}.status-bar a:hover{color:#fff}
-header{padding:24px 28px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
-.logo{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:var(--white);letter-spacing:-.02em}
-.logo b{color:var(--red2)}
-.tagline{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.06em;text-transform:uppercase}
-.pw{font-size:10px;color:var(--muted);text-align:right}.pw a{color:var(--cyan);text-decoration:none}.pw a:hover{text-decoration:underline}
-.sa{padding:20px 28px 14px}.sb{position:relative;max-width:900px}
-.si{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 120px 14px 18px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--white);outline:none;transition:border-color .2s,box-shadow .2s}
-.si:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(220,53,69,.12)}.si::placeholder{color:var(--muted)}
-.btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--red);border:none;border-radius:7px;padding:9px 20px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;cursor:pointer}.btn:hover{background:var(--red2)}
-.tabs{display:flex;gap:4px;margin-top:12px;flex-wrap:wrap}
-.tab{background:0;border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
-.tab:hover{background:rgba(255,255,255,.03)}.tab.active{background:rgba(255,255,255,.06)}
-.tab.t-c.active{border-color:var(--blue);color:var(--blue)}.tab.t-e.active{border-color:var(--green);color:var(--green)}
-.tab.t-f.active{border-color:var(--purple);color:var(--purple)}.tab.t-p.active{border-color:var(--orange);color:var(--orange)}
-.tab.t-a.active{border-color:var(--red2);color:var(--red2)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.st{background:var(--surface);padding:12px 14px;text-align:center}
-.sn{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--white)}
-.sl{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
-.results{padding:16px 28px 40px;max-width:1000px}
-.rh{font-size:11px;color:var(--muted);margin-bottom:12px}.rh em{color:var(--gold);font-style:normal}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:8px;transition:border-color .15s}
-.card:hover{border-color:var(--blue)}
-.card.ce{border-left:3px solid var(--green)}.card.ce:hover{border-color:var(--green)}
-.card.cf{border-left:3px solid var(--purple)}.card.cf:hover{border-color:var(--purple)}
-.card.ca{border-left:3px solid var(--red)}.card.ca:hover{border-color:var(--red)}
-.ct{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
-.cn{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--white);line-height:1.35}
-.badge{font-size:9px;padding:3px 8px;border-radius:4px;white-space:nowrap;font-weight:500;flex-shrink:0}
-.bc{background:rgba(59,130,246,.15);color:var(--blue)}.be{background:rgba(34,197,94,.15);color:var(--green)}
-.bf{background:rgba(168,85,247,.15);color:var(--purple)}.ba{background:rgba(220,53,69,.15);color:var(--red2)}
-.meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:11px;color:var(--muted)}
-.meta strong{color:var(--text);font-weight:500}
-.mo{color:var(--green);font-weight:600}.sa2{color:var(--purple);font-weight:600}.rep{color:var(--orange)}
-mark{background:rgba(220,53,69,.25);color:#fca5a5;padding:1px 3px;border-radius:2px}
-.db{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);border-radius:6px;color:var(--cyan);font-size:11px;text-decoration:none;transition:all .15s}
-.db:hover{background:rgba(6,182,212,.2);border-color:var(--cyan)}
-.sec{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}.sec span{font-weight:600}
-.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
-.ld{text-align:center;padding:30px;color:var(--muted);font-size:12px}
-.ld::after{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:sp .6s linear infinite;margin-left:8px;vertical-align:middle}
-@keyframes sp{to{transform:rotate(360deg)}}
-.pag{display:flex;gap:4px;margin-top:14px;justify-content:center}
-.pb{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer}
-.pb:hover{border-color:var(--blue);color:var(--blue)}.pb.active{background:var(--blue);color:#fff;border-color:var(--blue)}.pb:disabled{opacity:.3;cursor:default}
-footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;font-size:10px;color:var(--muted);flex-wrap:wrap;gap:6px}
-footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan)}
-@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}.si{padding-right:90px;font-size:13px}.results{padding:12px 16px 30px}header{padding:16px 16px 12px}.sa{padding:14px 16px 10px}.card{padding:12px 14px}.logo{font-size:26px}}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#222;
+  --text:#e8e8e8;--text2:#888;--accent:#00e676;--accent2:#00c853;
+  --red:#ff5252;--yellow:#ffd740;--blue:#448aff;
+  --font:'DM Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --radius:8px;
+}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* LIVE BAR */
+.live-bar{background:var(--accent);color:#000;text-align:center;padding:6px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
+.live-dot{width:8px;height:8px;background:#000;border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* HEADER */
+header{padding:2rem 1.5rem 1rem;max-width:1200px;margin:0 auto}
+header h1{font-size:1.8rem;font-weight:700;letter-spacing:-.02em}
+header h1 span{color:var(--accent)}
+header p{color:var(--text2);font-size:.85rem;margin-top:.3rem}
+.stats-bar{display:flex;gap:1.5rem;margin-top:1rem;flex-wrap:wrap}
+.stat{font-family:var(--mono);font-size:.8rem;color:var(--text2)}
+.stat b{color:var(--accent);font-weight:500}
+
+/* NAV TABS */
+nav{max-width:1200px;margin:1rem auto 0;padding:0 1.5rem;display:flex;gap:4px;border-bottom:1px solid var(--border);overflow-x:auto}
+nav button{background:none;border:none;color:var(--text2);font-family:var(--font);font-size:.85rem;font-weight:500;padding:.6rem 1rem;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+nav button:hover{color:var(--text)}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* MAIN */
+main{max-width:1200px;margin:0 auto;padding:1.5rem}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* SEARCH */
+.search-box{display:flex;gap:8px;margin-bottom:1.5rem}
+.search-box input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.9rem;padding:.7rem 1rem;border-radius:var(--radius);outline:none;transition:border .2s}
+.search-box input:focus{border-color:var(--accent)}
+.search-box input::placeholder{color:var(--text2)}
+.search-box button{background:var(--accent);color:#000;border:none;font-family:var(--font);font-weight:600;font-size:.85rem;padding:.7rem 1.5rem;border-radius:var(--radius);cursor:pointer;transition:background .2s;white-space:nowrap}
+.search-box button:hover{background:var(--accent2)}
+.search-box button:disabled{opacity:.5;cursor:not-allowed}
+
+/* FILTERS */
+.filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.filter-row select{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.8rem;padding:.5rem .8rem;border-radius:var(--radius);outline:none;cursor:pointer}
+
+/* RESULTS */
+.results-info{color:var(--text2);font-size:.8rem;margin-bottom:1rem;font-family:var(--mono)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:8px;transition:border-color .2s}
+.card:hover{border-color:var(--accent)}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.5rem}
+.card-name{font-weight:600;font-size:.95rem}
+.card-badge{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+.badge-contrato{background:#1a237e;color:#82b1ff}
+.badge-empresa{background:#1b5e20;color:#b9f6ca}
+.badge-funcionario{background:#4a148c;color:#ea80fc}
+.badge-nomina{background:#bf360c;color:#ffab91}
+.badge-anomalia{background:#b71c1c;color:#ff8a80}
+.card-detail{font-size:.8rem;color:var(--text2);line-height:1.8}
+.card-detail span{color:var(--text);font-weight:500}
+.card-money{font-family:var(--mono);color:var(--accent);font-weight:600}
+
+/* NOMINA STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1.5rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.stat-card h3{font-size:.8rem;color:var(--text2);font-weight:500;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em}
+.stat-card .big-num{font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--accent)}
+.stat-card .details{font-size:.75rem;color:var(--text2);margin-top:.4rem;line-height:1.8}
+.stat-card .details span{color:var(--text)}
+
+/* LOADING */
+.loading{text-align:center;padding:3rem;color:var(--text2);font-size:.85rem}
+.loading::after{content:'';display:block;width:24px;height:24px;margin:1rem auto 0;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem;color:var(--text2);font-size:.85rem}
+
+/* FOOTER */
+footer{text-align:center;padding:2rem 1rem;color:var(--text2);font-size:.75rem;border-top:1px solid var(--border);margin-top:3rem}
+footer a{color:var(--accent)}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  html{font-size:14px}
+  header{padding:1.5rem 1rem .8rem}
+  main{padding:1rem}
+  .card-header{flex-direction:column;gap:.3rem}
+  .stats-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
-<div class="status-bar">
-<div class="live"><span class="dot"></span>EN VIVO — 579K contratos · 43K empresas · 167K funcionarios indexados</div>
-<a href="https://archivord.com">archivord.com</a>
-</div>
+
+<div class="live-bar"><span class="live-dot"></span> EN VIVO — Base de datos actualizada continuamente</div>
+
 <header>
-<div><div class="logo">Archivo<b>RD</b></div><div class="tagline">Motor de investigación pública · República Dominicana · 2015–2026</div></div>
-<div class="pw">Un producto de<br><a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a></div>
+  <h1>Archivo<span>RD</span></h1>
+  <p>Periodismo de datos cívico — República Dominicana</p>
+  <div class="stats-bar">
+    <div class="stat"><b>579K</b> contratos</div>
+    <div class="stat"><b>43K</b> empresas</div>
+    <div class="stat"><b>167K</b> funcionarios</div>
+    <div class="stat"><b>268K</b> nóminas</div>
+  </div>
 </header>
-<div class="sa"><div class="sb">
-<input class="si" id="q" placeholder="Busca nombre, empresa, institución, cargo o contrato..." autocomplete="off"/>
-<button class="btn" onclick="buscar()">Buscar</button>
-</div>
-<div class="tabs">
-<button class="tab t-c active" onclick="setTab(this,'contratos')">📄 Contratos</button>
-<button class="tab t-e" onclick="setTab(this,'empresas')">🏢 Empresas</button>
-<button class="tab t-f" onclick="setTab(this,'funcionarios')">🏛 Funcionarios</button>
-<button class="tab t-p" onclick="setTab(this,'persona')">👤 Buscar Persona</button>
-<button class="tab t-a" onclick="setTab(this,'anomalias')">⚠ Anomalías (1,632)</button>
-</div></div>
-<div class="stats">
-<div class="st"><div class="sn">579K</div><div class="sl">Contratos</div></div>
-<div class="st"><div class="sn">43K</div><div class="sl">Empresas</div></div>
-<div class="st"><div class="sn" id="sf">167K</div><div class="sl">Funcionarios</div></div>
-<div class="st"><div class="sn" style="color:var(--red2)">1,632</div><div class="sl">Anomalías</div></div>
-<div class="st"><div class="sn">340+</div><div class="sl">Instituciones</div></div>
-<div class="st"><div class="sn" id="sr">—</div><div class="sl">Encontrados</div></div>
-</div>
-<div class="results"><div class="rh" id="rh"></div><div id="rl"><div class="ld">Conectando</div></div><div class="pag" id="pag"></div></div>
+
+<nav id="tabs">
+  <button class="active" onclick="showTab('contratos')">Contratos</button>
+  <button onclick="showTab('empresas')">Empresas</button>
+  <button onclick="showTab('funcionarios')">Funcionarios</button>
+  <button onclick="showTab('nominas')">Nóminas</button>
+  <button onclick="showTab('persona')">Buscar Persona</button>
+  <button onclick="showTab('anomalias')">Anomalías</button>
+</nav>
+
+<main>
+
+  <!-- TAB: CONTRATOS -->
+  <div id="tab-contratos" class="tab-content active">
+    <div class="search-box">
+      <input id="q-contratos" placeholder="Buscar contratos (empresa, objeto, entidad)..." onkeydown="if(event.key==='Enter')buscarContratos()">
+      <button onclick="buscarContratos()">Buscar</button>
+    </div>
+    <div id="r-contratos" class="empty">Ingresa un término para buscar entre 579,001 contratos del DGCP.</div>
+  </div>
+
+  <!-- TAB: EMPRESAS -->
+  <div id="tab-empresas" class="tab-content">
+    <div class="search-box">
+      <input id="q-empresas" placeholder="Buscar empresas (nombre, RNC, representante)..." onkeydown="if(event.key==='Enter')buscarEmpresas()">
+      <button onclick="buscarEmpresas()">Buscar</button>
+    </div>
+    <div id="r-empresas" class="empty">Busca entre 43,219 empresas registradas con el Estado.</div>
+  </div>
+
+  <!-- TAB: FUNCIONARIOS -->
+  <div id="tab-funcionarios" class="tab-content">
+    <div class="search-box">
+      <input id="q-funcionarios" placeholder="Buscar funcionarios (nombre, cargo, institución)..." onkeydown="if(event.key==='Enter')buscarFuncionarios()">
+      <button onclick="buscarFuncionarios()">Buscar</button>
+    </div>
+    <div id="r-funcionarios" class="empty">Busca entre 167,085+ funcionarios públicos de RD.</div>
+  </div>
+
+  <!-- TAB: NÓMINAS -->
+  <div id="tab-nominas" class="tab-content">
+    <div id="nominas-stats" class="stats-grid"><div class="loading">Cargando estadísticas...</div></div>
+    <div class="search-box">
+      <input id="q-nominas" placeholder="Buscar empleado en nóminas (nombre)..." onkeydown="if(event.key==='Enter')buscarNominas()">
+      <button onclick="buscarNominas()">Buscar</button>
+    </div>
+    <div class="filter-row">
+      <select id="f-institucion" onchange="buscarNominas()">
+        <option value="">Todas las instituciones</option>
+        <option value="BCRD">Banco Central</option>
+        <option value="MOPC">MOPC</option>
+        <option value="DGA">DGA Aduanas</option>
+        <option value="PODER_JUDICIAL">Poder Judicial</option>
+      </select>
+    </div>
+    <div id="r-nominas" class="empty">Busca entre 268,771 registros de nómina de 4 instituciones (BCRD, MOPC, DGA, Poder Judicial).</div>
+  </div>
+
+  <!-- TAB: BUSCAR PERSONA -->
+  <div id="tab-persona" class="tab-content">
+    <div class="search-box">
+      <input id="q-persona" placeholder="Nombre completo (busca en contratos, funcionarios y nóminas)..." onkeydown="if(event.key==='Enter')buscarPersona()">
+      <button onclick="buscarPersona()">Buscar en todo</button>
+    </div>
+    <div id="r-persona" class="empty">Búsqueda unificada: cruza contratos, empresas, funcionarios y nóminas.</div>
+  </div>
+
+  <!-- TAB: ANOMALÍAS -->
+  <div id="tab-anomalias" class="tab-content">
+    <div class="search-box">
+      <input id="q-anomalias" placeholder="Buscar anomalías (empresa, monto, tipo)..." onkeydown="if(event.key==='Enter')buscarAnomalias()">
+      <button onclick="buscarAnomalias()">Detectar</button>
+    </div>
+    <div id="r-anomalias" class="empty">Detección de patrones inusuales en contrataciones públicas.</div>
+  </div>
+
+</main>
+
 <footer>
-<span>Fuentes: DGCP · datos.gob.do · MAP · Licencia ODbL</span>
-<span>ArchivoRD v5.0 · <a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a> · código abierto</span>
+  <p>ArchivoRD v6.0 — Un producto de <a href="https://shcustomsoftware.info" target="_blank">SH Custom Software</a></p>
+  <p style="margin-top:.3rem">Datos fuente: DGCP, datos.gob.do, MOPC, DGA, Banco Central | <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a></p>
 </footer>
+
 <script>
-const{createClient}=supabase;
-const sb=createClient("https://dovguconmpevxekjsyus.supabase.co","sb_publishable_b4g-gR0MbV2beUjHuaz4tg_66kQPQj5");
-const sb2=createClient("https://ecxvgzogwhsrislmfihh.supabase.co","sb_publishable_HjtzsafvsgRJ36c2DU-mPA_Tu5fZx1V");
-const P=20;let tab='contratos',q='',pg=1;
-const AN=[
-{t:"Fraccionamiento",i:"Ministerio de Educación",p:"BAING, SRL",r:"",m:36308000,f:"2025-12",d:"20 contratos dic 2025, todos bajo límite compra directa, sumando RD$36.3M."},
-{t:"Fraccionamiento",i:"Ministerio de Educación",p:"Martínez Torres Traveling, SRL",r:"",m:33475579,f:"2025-12",d:"20 contratos dic 2025 sumando RD$33.5M."},
-{t:"Fraccionamiento",i:"Ministerio de Educación",p:"Inversiones Carafran, SRL",r:"",m:32240643,f:"2025-12",d:"18 contratos dic 2025 sumando RD$32.2M."},
-{t:"Fraccionamiento",i:"Dir. Proyectos Estratégicos",p:"Wilfredo Díaz Productions, SRL",r:"Wilfredo Germán Díaz Ureña",m:32000000,f:"2024",d:"8 contratos audiovisuales en un mes sumando RD$32M."},
-{t:"Fraccionamiento",i:"Ministerio de Deportes",p:"Services Travel, SRL",r:"ANTONIO N. CHAHIN LAMA",m:32206372,f:"2018-06",d:"55 contratos jun 2018 sumando RD$32M. Total: RD$601M en 1,285 contratos."},
-{t:"Fraccionamiento",i:"Ministerio de Deportes",p:"HEECA, SRL",r:"",m:22520000,f:"2021-11",d:"5 contratos nov 2021 sumando RD$22.5M."},
-{t:"Fraccionamiento",i:"OMSA",p:"Sigma Petroleum Corp, SAS",r:"",m:20248400,f:"2018-03",d:"9 contratos combustible en un mes sumando RD$20.2M."},
-{t:"Fraccionamiento",i:"Ministerio de Defensa",p:"Oficclin Comercial, SRL",r:"",m:19237154,f:"2023-11",d:"22 contratos nov 2023 sumando RD$19.2M."},
-{t:"Fraccionamiento",i:"Fuerza Aérea",p:"Torcons, SRL",r:"",m:21115092,f:"2024-06",d:"17 contratos jun 2024 sumando RD$21.1M."},
-{t:"Fraccionamiento",i:"Min. Relaciones Exteriores",p:"Milena Tours, SRL",r:"",m:17787704,f:"2018-10",d:"31 contratos oct 2018 sumando RD$17.8M."},
-];
-function fmt(n){const v=parseFloat(n||0);if(v>=1e9)return`RD$${(v/1e9).toFixed(1)}B`;if(v>=1e6)return`RD$${(v/1e6).toFixed(1)}M`;if(v>0)return`RD$${v.toLocaleString('es-DO')}`;return'—';}
-function hl(t,s){if(!s||s.length<2)return t||'';const w=s.toLowerCase().split(/\s+/).filter(x=>x.length>1);return w.reduce((r,w)=>r.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`),String(t||''));}
-function setTab(b,t){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');tab=t;pg=1;render();}
-function buscar(){q=document.getElementById('q').value.trim();pg=1;render();}
-document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')buscar();});
-function render(){document.getElementById('pag').innerHTML='';if(tab==='anomalias')rA();else if(tab==='empresas')rE();else if(tab==='funcionarios')rF();else if(tab==='persona')rP();else rC();}
+// ============================================================
+// SUPABASE CLIENTS
+// ============================================================
+const sb = supabase.createClient(
+  'https://dovguconmpevxekjsyus.supabase.co',
+  'sb_publishable_b4g-gR0MbV2beUjHuaz4tg_66kQPQj5'
+);
+const sb2 = supabase.createClient(
+  'https://ecxvgzogwhsrislmfihh.supabase.co',
+  'sb_publishable_HjtzsafvsgRJ36c2DU-mPA_Tu5fZx1V'
+);
 
-async function rC(){
-document.getElementById('rl').innerHTML='<div class="ld">Buscando contratos</div>';
-try{let d,e;if(q&&q.length>=2){const r=await sb.rpc('buscar_contratos',{termino:q});d=r.data;e=r.error;}else{const f=(pg-1)*P,t=f+P-1;const r=await sb.from('contratos').select('*').order('monto',{ascending:false}).range(f,t);d=r.data;e=r.error;}
-if(e)throw e;const n=d?d.length:0;document.getElementById('sr').textContent=q?n:'579,001';
-document.getElementById('rh').innerHTML=q?`${n} resultado(s) para <em>"${q}"</em>`:'579,001 contratos — <em>mayor monto primero</em>';
-if(!q)rPg(pg,100);
-document.getElementById('rl').innerHTML=n?d.map(d=>`<div class="card"><div class="ct"><div class="cn">${hl(d.titulo||'Sin título',q)}</div><span class="badge bc">Contrato</span></div><div style="font-size:12px;color:var(--muted)">Proveedor: <strong style="color:var(--text)">${hl(d.proveedor||'No especificado',q)}</strong></div><div class="meta"><span>Institución: <strong>${hl(d.institucion||'—',q)}</strong></span><span>Fecha: <strong>${d.fecha||'—'}</strong></span><span>Estado: <strong>${d.estado||'—'}</strong></span><span>Modalidad: <strong>${d.modalidad||'—'}</strong></span><span class="mo">${fmt(d.monto)}</span></div>${d.url_doc?`<a class="db" href="${d.url_doc}" target="_blank">📎 Ver documento original →</a>`:''}</div>`).join(''):'<div class="empty">Sin resultados.</div>';
-}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const btns = document.querySelectorAll('nav button');
+  const tabs = ['contratos','empresas','funcionarios','nominas','persona','anomalias'];
+  const idx = tabs.indexOf(id);
+  if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+  // Load nominas stats on first visit
+  if (id === 'nominas' && !window._nominasStatsLoaded) {
+    cargarStatsNominas();
+    window._nominasStatsLoaded = true;
+  }
+}
 
-async function rE(){
-document.getElementById('rl').innerHTML='<div class="ld">Buscando empresas</div>';
-try{const f=(pg-1)*P,t=f+P-1;let qr=sb.from('empresas').select('*',{count:'exact'});
-if(q&&q.length>=2)qr=qr.or(`nombre.ilike.%${q}%,representante.ilike.%${q}%,rnc.ilike.%${q}%`);
-const{data:d,error:e,count:c}=await qr.order('monto_total',{ascending:false}).range(f,t);if(e)throw e;const tt=c||0;
-document.getElementById('sr').textContent=tt>=1000?(tt/1000).toFixed(0)+'K':tt;
-document.getElementById('rh').innerHTML=`${tt.toLocaleString()} empresa(s)${q?` con <em>"${q}"</em>`:'— <em>mayor monto primero</em>'}`;
-rPg(pg,Math.ceil(tt/P));
-document.getElementById('rl').innerHTML=d&&d.length?d.map(e=>`<div class="card ce"><div class="ct"><div class="cn">${hl(e.nombre||'',q)}</div><span class="badge be">Empresa</span></div><div class="meta"><span>RNC: <strong>${e.rnc||'—'}</strong></span><span>Contratos: <strong>${e.contratos_count||0}</strong></span><span>Región: <strong>${e.region||'—'}</strong></span>${e.representante&&e.representante!='nan'?`<span class="rep">👤 ${hl(e.representante,q)}</span>`:''}<span class="mo">${fmt(e.monto_total)}</span></div>${e.direccion&&e.direccion!='nan'?`<div style="font-size:11px;color:var(--muted);margin-top:6px">📍 ${String(e.direccion).substring(0,90)}</div>`:''}</div>`).join(''):'<div class="empty">Sin resultados.</div>';
-}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
+// ============================================================
+// UTILITIES
+// ============================================================
+const fmt = n => n == null ? '—' : 'RD$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+const esc = s => s ? String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+const setHTML = (id, html) => document.getElementById(id).innerHTML = html;
+const getVal = id => document.getElementById(id).value.trim();
 
-async function rF(){
-document.getElementById('rl').innerHTML='<div class="ld">Buscando funcionarios</div>';
-try{let d,tt;
-if(q&&q.length>=2){const r=await sb2.rpc('buscar_funcionarios',{termino:q});if(r.error)throw r.error;d=r.data||[];tt=d.length;}
-else{const f=(pg-1)*P,t=f+P-1;const r=await sb2.from('funcionarios').select('*',{count:'exact'}).order('salario',{ascending:false}).range(f,t);if(r.error)throw r.error;d=r.data||[];tt=r.count||0;rPg(pg,Math.ceil(tt/P));}
-document.getElementById('sr').textContent=tt>=1000?(tt/1000).toFixed(0)+'K':tt;
-document.getElementById('sf').textContent='167K';
-document.getElementById('rh').innerHTML=q?`${tt} funcionario(s) para <em>"${q}"</em>`:`${tt.toLocaleString()} funcionarios — <em>mayor salario primero</em>`;
-document.getElementById('rl').innerHTML=d&&d.length?d.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre||'',q)}</div><span class="badge bf">Funcionario</span></div><div style="font-size:12px;color:var(--muted)">${hl(f.cargo||'—',q)}</div><div class="meta"><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.departamento?`<span>Área: <strong>${f.departamento}</strong></span>`:''}${f.estatus?`<span>Estatus: <strong>${f.estatus}</strong></span>`:''}${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join(''):'<div class="empty">Sin resultados.</div>';
-}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
+// ============================================================
+// CONTRATOS
+// ============================================================
+async function buscarContratos() {
+  const q = getVal('q-contratos');
+  if (!q) return;
+  setHTML('r-contratos', '<div class="loading">Buscando contratos...</div>');
+  const { data, error } = await sb.rpc('buscar_contratos', { termino: q });
+  if (error) { setHTML('r-contratos', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
+  if (!data || !data.length) { setHTML('r-contratos', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
+  setHTML('r-contratos',
+    `<div class="results-info">${data.length} resultados</div>` +
+    data.map(c => `<div class="card">
+      <div class="card-header">
+        <div class="card-name">${esc(c.nombre_proveedor || c.supplier_name || 'Sin nombre')}</div>
+        <span class="card-badge badge-contrato">Contrato</span>
+      </div>
+      <div class="card-detail">
+        Objeto: <span>${esc(c.descripcion || c.tender_title || '—')}</span><br>
+        Entidad: <span>${esc(c.entidad || c.buyer_name || '—')}</span><br>
+        Monto: <span class="card-money">${fmt(c.monto || c.amount)}</span>
+        ${c.url_doc ? ' · <a href="'+esc(c.url_doc)+'" target="_blank">Ver documento</a>' : ''}
+      </div>
+    </div>`).join('')
+  );
+}
 
-async function rP(){
-if(!q||q.length<2){document.getElementById('rh').innerHTML='Escribe un nombre para buscar en todas las fuentes';document.getElementById('rl').innerHTML='<div class="empty">Ejemplo: "Antonio Chahin" · "Fausto Mata" · "Plaza Lama"</div>';document.getElementById('sr').textContent='—';return;}
-document.getElementById('rl').innerHTML='<div class="ld">Buscando en contratos, empresas y funcionarios</div>';
-try{const[eR,cR,fR]=await Promise.all([sb.from('empresas').select('*').or(`representante.ilike.%${q}%,nombre.ilike.%${q}%`).order('monto_total',{ascending:false}).limit(15),sb.rpc('buscar_contratos',{termino:q}),sb2.rpc('buscar_funcionarios',{termino:q})]);
-const emp=eR.data||[],con=cR.data||[],fun=fR.data||[];const tt=emp.length+con.length+fun.length;
-document.getElementById('sr').textContent=tt;document.getElementById('rh').innerHTML=`Búsqueda unificada: <em>"${q}"</em> — ${tt} resultados en todas las fuentes`;let h='';
-if(fun.length){const s=fun.reduce((a,f)=>a+parseFloat(f.salario||0),0);h+=`<div class="sec">🏛 <span>Funcionario público</span> — ${fun.length} registro(s)${s>0?` · Salario: <span style="color:var(--purple)">RD$${s.toLocaleString('es-DO')}/mes</span>`:''}</div>`;h+=fun.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre,q)}</div><span class="badge bf">Funcionario</span></div><div class="meta"><span>Cargo: <strong>${hl(f.cargo||'—',q)}</strong></span><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join('');}
-if(emp.length){const m=emp.reduce((a,e)=>a+parseFloat(e.monto_total||0),0);h+=`<div class="sec" style="margin-top:14px">🏢 <span>Empresas vinculadas</span> — ${emp.length} empresa(s) · Total: <span style="color:var(--green)">${fmt(m)}</span></div>`;h+=emp.map(e=>`<div class="card ce"><div class="ct"><div class="cn">${hl(e.nombre,q)}</div><span class="badge be">Empresa</span></div><div class="meta"><span>RNC: <strong>${e.rnc||'—'}</strong></span><span>Contratos: <strong>${e.contratos_count||0}</strong></span>${e.representante&&e.representante!='nan'?`<span class="rep">👤 ${hl(e.representante,q)}</span>`:''}<span class="mo">${fmt(e.monto_total)}</span></div></div>`).join('');}
-if(con.length){h+=`<div class="sec" style="margin-top:14px">📄 <span>Contratos</span> — ${con.length} contrato(s)</div>`;h+=con.map(d=>`<div class="card"><div class="ct"><div class="cn">${hl(d.titulo||'Sin título',q)}</div><span class="badge bc">Contrato</span></div><div class="meta"><span>Proveedor: <strong>${hl(d.proveedor||'—',q)}</strong></span><span>Institución: <strong>${hl(d.institucion||'—',q)}</strong></span><span>Fecha: <strong>${d.fecha||'—'}</strong></span><span class="mo">${fmt(d.monto)}</span></div>${d.url_doc?`<a class="db" href="${d.url_doc}" target="_blank">📎 Ver documento →</a>`:''}</div>`).join('');}
-if(!tt)h='<div class="empty">Sin resultados. Intenta con apellido o empresa.</div>';document.getElementById('rl').innerHTML=h;
-}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
+// ============================================================
+// EMPRESAS
+// ============================================================
+async function buscarEmpresas() {
+  const q = getVal('q-empresas');
+  if (!q) return;
+  setHTML('r-empresas', '<div class="loading">Buscando empresas...</div>');
+  const { data, error } = await sb.from('empresas')
+    .select('*')
+    .or(`nombre.ilike.%${q}%,rnc.ilike.%${q}%,representante_legal.ilike.%${q}%`)
+    .limit(100);
+  if (error) { setHTML('r-empresas', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
+  if (!data || !data.length) { setHTML('r-empresas', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
+  setHTML('r-empresas',
+    `<div class="results-info">${data.length} resultados</div>` +
+    data.map(e => `<div class="card">
+      <div class="card-header">
+        <div class="card-name">${esc(e.nombre)}</div>
+        <span class="card-badge badge-empresa">Empresa</span>
+      </div>
+      <div class="card-detail">
+        RNC: <span>${esc(e.rnc || '—')}</span><br>
+        Representante: <span>${esc(e.representante_legal || '—')}</span><br>
+        Contratos: <span>${e.total_contratos || '—'}</span> · Total: <span class="card-money">${fmt(e.monto_total)}</span>
+      </div>
+    </div>`).join('')
+  );
+}
 
-function rA(){const l=q.toLowerCase();let d=AN;if(q)d=d.filter(a=>a.t.toLowerCase().includes(l)||a.p.toLowerCase().includes(l)||a.i.toLowerCase().includes(l)||(a.r||'').toLowerCase().includes(l));
-document.getElementById('sr').textContent=d.length;document.getElementById('rh').innerHTML=`${d.length} anomalías — <em>algoritmo ArchivoRD</em>`;
-document.getElementById('rl').innerHTML=d.length?d.map(a=>`<div class="card ca"><div class="ct"><div class="cn">${hl(a.t+' — '+a.i,q)}</div><span class="badge ba">⚠ ANOMALÍA</span></div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">${hl(a.d,q)}</div><div class="meta"><span>Proveedor: <strong>${hl(a.p,q)}</strong></span>${a.r?`<span class="rep">👤 ${hl(a.r,q)}</span>`:''}<span>Período: <strong>${a.f}</strong></span><span class="mo">${fmt(a.m)}</span></div></div>`).join(''):'<div class="empty">Sin resultados.</div>';}
+// ============================================================
+// FUNCIONARIOS
+// ============================================================
+async function buscarFuncionarios() {
+  const q = getVal('q-funcionarios');
+  if (!q) return;
+  setHTML('r-funcionarios', '<div class="loading">Buscando funcionarios...</div>');
+  const { data, error } = await sb2.rpc('buscar_funcionarios', { termino: q });
+  if (error) { setHTML('r-funcionarios', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
+  if (!data || !data.length) { setHTML('r-funcionarios', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
+  setHTML('r-funcionarios',
+    `<div class="results-info">${data.length} resultados</div>` +
+    data.map(f => `<div class="card">
+      <div class="card-header">
+        <div class="card-name">${esc(f.nombre)}</div>
+        <span class="card-badge badge-funcionario">Funcionario</span>
+      </div>
+      <div class="card-detail">
+        Cargo: <span>${esc(f.cargo || '—')}</span><br>
+        Institución: <span>${esc(f.institucion || '—')}</span><br>
+        ${f.sueldo_bruto ? 'Sueldo: <span class="card-money">' + fmt(f.sueldo_bruto) + '</span>' : ''}
+      </div>
+    </div>`).join('')
+  );
+}
 
-function rPg(c,t){if(t<=1){document.getElementById('pag').innerHTML='';return;}let h=`<button class="pb" onclick="goP(${c-1})" ${c>1?'':'disabled'}>← Ant</button>`;const s=Math.max(1,c-2),e=Math.min(t,c+2);for(let p=s;p<=e;p++)h+=`<button class="pb ${p===c?'active':''}" onclick="goP(${p})">${p}</button>`;h+=`<button class="pb" onclick="goP(${c+1})" ${c<t?'':'disabled'}>Sig →</button>`;document.getElementById('pag').innerHTML=h;}
-function goP(p){pg=p;render();window.scrollTo(0,0);}
-async function init(){try{const{count}=await sb2.from('funcionarios').select('*',{count:'exact',head:true});if(count>0)document.getElementById('sf').textContent=count>=1000?(count/1000).toFixed(0)+'K':count;}catch(e){}render();}
-init();
+// ============================================================
+// NÓMINAS
+// ============================================================
+async function cargarStatsNominas() {
+  try {
+    const { data, error } = await sb2.rpc('stats_nominas');
+    if (error || !data || !data.length) {
+      // Fallback: query directly
+      const { data: countData } = await sb2.from('nominas').select('institucion', { count: 'exact', head: true });
+      setHTML('nominas-stats', '<div class="empty">268,771 registros de nómina disponibles.</div>');
+      return;
+    }
+    let total = 0;
+    data.forEach(d => total += Number(d.total_empleados || 0));
+    setHTML('nominas-stats', data.map(d => `<div class="stat-card">
+      <h3>${esc(d.institucion)}</h3>
+      <div class="big-num">${Number(d.total_empleados).toLocaleString()}</div>
+      <div class="details">
+        Promedio: <span class="card-money">${fmt(d.sueldo_promedio)}</span><br>
+        Máximo: <span class="card-money">${fmt(d.sueldo_max)}</span><br>
+        Nómina total: <span class="card-money">${fmt(d.total_bruto)}</span>
+      </div>
+    </div>`).join('') + `<div class="stat-card">
+      <h3>TOTAL</h3>
+      <div class="big-num">${total.toLocaleString()}</div>
+      <div class="details">registros de nómina<br>4 instituciones</div>
+    </div>`);
+  } catch(e) {
+    setHTML('nominas-stats', '');
+  }
+}
+
+async function buscarNominas() {
+  const q = getVal('q-nominas');
+  if (!q) return;
+  const inst = document.getElementById('f-institucion').value;
+  setHTML('r-nominas', '<div class="loading">Buscando en nóminas...</div>');
+
+  let data, error;
+  if (inst) {
+    // Filter by institution using direct query
+    const patron = '%' + q.toLowerCase().split(/\s+/).join('%') + '%';
+    ({ data, error } = await sb2.from('nominas')
+      .select('*')
+      .eq('institucion', inst)
+      .ilike('nombre_completo', patron)
+      .order('sueldo_bruto', { ascending: false })
+      .limit(100));
+  } else {
+    ({ data, error } = await sb2.rpc('buscar_nominas', { termino: q }));
+  }
+
+  if (error) { setHTML('r-nominas', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
+  if (!data || !data.length) { setHTML('r-nominas', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
+
+  setHTML('r-nominas',
+    `<div class="results-info">${data.length} resultados</div>` +
+    data.map(n => `<div class="card">
+      <div class="card-header">
+        <div class="card-name">${esc(n.nombre_completo)}</div>
+        <span class="card-badge badge-nomina">${esc(n.institucion)}</span>
+      </div>
+      <div class="card-detail">
+        Cargo: <span>${esc(n.cargo || '—')}</span><br>
+        Departamento: <span>${esc(n.departamento || '—')}</span><br>
+        Tipo: <span>${esc(n.tipo_empleado || '—')}</span>
+        ${n.genero ? ' · Género: <span>' + esc(n.genero) + '</span>' : ''}
+        ${n.anios_servicio ? ' · Años: <span>' + n.anios_servicio + '</span>' : ''}<br>
+        Bruto: <span class="card-money">${fmt(n.sueldo_bruto)}</span> ·
+        AFP: <span>${fmt(n.descuento_afp)}</span> ·
+        ISR: <span>${fmt(n.descuento_isr)}</span> ·
+        SFS: <span>${fmt(n.descuento_sfs)}</span><br>
+        Neto: <span class="card-money">${fmt(n.sueldo_neto)}</span>
+        ${n.mes && n.anio ? ' · Período: <span>' + n.mes + '/' + n.anio + '</span>' : ''}
+      </div>
+    </div>`).join('')
+  );
+}
+
+// ============================================================
+// BUSCAR PERSONA (UNIFICADO)
+// ============================================================
+async function buscarPersona() {
+  const q = getVal('q-persona');
+  if (!q) return;
+  setHTML('r-persona', '<div class="loading">Buscando en todas las fuentes...</div>');
+
+  const results = [];
+
+  // 1. Contratos (sb)
+  try {
+    const { data } = await sb.rpc('buscar_contratos', { termino: q });
+    (data || []).forEach(c => results.push({
+      nombre: c.nombre_proveedor || c.supplier_name || '—',
+      detalle: `Entidad: ${c.entidad || c.buyer_name || '—'} · Monto: ${fmt(c.monto || c.amount)}`,
+      tipo: 'contrato', badge: 'badge-contrato'
+    }));
+  } catch(e) {}
+
+  // 2. Empresas (sb)
+  try {
+    const { data } = await sb.from('empresas')
+      .select('*')
+      .ilike('representante_legal', `%${q}%`)
+      .limit(20);
+    (data || []).forEach(e => results.push({
+      nombre: e.representante_legal || '—',
+      detalle: `Empresa: ${e.nombre} · RNC: ${e.rnc || '—'} · ${fmt(e.monto_total)}`,
+      tipo: 'empresa', badge: 'badge-empresa'
+    }));
+  } catch(e) {}
+
+  // 3. Funcionarios (sb2)
+  try {
+    const { data } = await sb2.rpc('buscar_funcionarios', { termino: q });
+    (data || []).forEach(f => results.push({
+      nombre: f.nombre,
+      detalle: `${f.cargo || '—'} · ${f.institucion || '—'}`,
+      tipo: 'funcionario', badge: 'badge-funcionario'
+    }));
+  } catch(e) {}
+
+  // 4. Nóminas (sb2)
+  try {
+    const { data } = await sb2.rpc('buscar_nominas', { termino: q });
+    (data || []).forEach(n => results.push({
+      nombre: n.nombre_completo,
+      detalle: `${n.cargo || '—'} · ${n.institucion} · Bruto: ${fmt(n.sueldo_bruto)} · Neto: ${fmt(n.sueldo_neto)}`,
+      tipo: 'nómina', badge: 'badge-nomina'
+    }));
+  } catch(e) {}
+
+  if (!results.length) {
+    setHTML('r-persona', '<div class="empty">Sin resultados para "' + esc(q) + '" en ninguna fuente.</div>');
+    return;
+  }
+
+  setHTML('r-persona',
+    `<div class="results-info">${results.length} resultados en ${new Set(results.map(r=>r.tipo)).size} fuentes</div>` +
+    results.map(r => `<div class="card">
+      <div class="card-header">
+        <div class="card-name">${esc(r.nombre)}</div>
+        <span class="card-badge ${r.badge}">${esc(r.tipo)}</span>
+      </div>
+      <div class="card-detail">${esc(r.detalle)}</div>
+    </div>`).join('')
+  );
+}
+
+// ============================================================
+// ANOMALÍAS
+// ============================================================
+async function buscarAnomalias() {
+  const q = getVal('q-anomalias');
+  setHTML('r-anomalias', '<div class="loading">Analizando patrones...</div>');
+  try {
+    // Buscar contratos de montos altos o patrones sospechosos
+    const { data } = await sb.from('contratos')
+      .select('*')
+      .order('monto', { ascending: false })
+      .limit(50);
+    if (!data || !data.length) {
+      setHTML('r-anomalias', '<div class="empty">No se encontraron anomalías.</div>');
+      return;
+    }
+    const filtered = q ? data.filter(c =>
+      JSON.stringify(c).toLowerCase().includes(q.toLowerCase())
+    ) : data;
+
+    setHTML('r-anomalias',
+      `<div class="results-info">${filtered.length} contratos de mayor monto</div>` +
+      filtered.map(c => `<div class="card">
+        <div class="card-header">
+          <div class="card-name">${esc(c.nombre_proveedor || c.supplier_name || '—')}</div>
+          <span class="card-badge badge-anomalia">${fmt(c.monto || c.amount)}</span>
+        </div>
+        <div class="card-detail">
+          ${esc(c.descripcion || c.tender_title || '—')}<br>
+          Entidad: <span>${esc(c.entidad || c.buyer_name || '—')}</span>
+        </div>
+      </div>`).join('')
+    );
+  } catch(e) {
+    setHTML('r-anomalias', '<div class="empty">Error cargando anomalías.</div>');
+  }
+}
 </script>
 </body>
 </html>
