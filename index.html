@@ -3,359 +3,181 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>ArchivoRD — Centro de Datos Públicos de RD</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<title>ArchivoRD — Motor de Investigación Pública</title>
+<meta name="description" content="Base de datos pública de contratos, empresas y funcionarios del Estado dominicano. 579,001 contratos desde 2015. Un producto de SH Custom Software."/>
+<meta property="og:title" content="ArchivoRD — Motor de Investigación Pública"/>
+<meta property="og:description" content="579K contratos, 43K empresas, 167K funcionarios del Estado dominicano. Datos públicos, búsqueda en tiempo real."/>
+<link rel="canonical" href="https://archivord.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--red:#C0392B;--red2:#E74C3C;--gold:#D4A017;--dark:#0D1117;--surface:#161B22;--border:#30363D;--text:#E6EDF3;--muted:#8B949E;--accent:#58A6FF;--green:#58C858;--orange:#E67E22;--purple:#9B59B6}
-body{font-family:'IBM Plex Mono',monospace;background:var(--dark);color:var(--text);min-height:100vh}
-.top-bar{background:var(--red);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px}
-.top-bar span{font-size:11px;color:#fff;letter-spacing:.08em}
-.pulse{width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:pulse 1.5s infinite;margin-right:6px;vertical-align:middle}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-header{padding:20px 24px 14px;border-bottom:1px solid var(--border)}
-.logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff}
-.logo span{color:var(--red2)}
-.tagline{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
-.search-section{padding:16px 24px 10px}
-.search-wrap{position:relative}
-.search-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:12px 110px 12px 16px;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
-.search-input:focus{border-color:var(--red2)}
-.search-input::placeholder{color:var(--muted)}
-.search-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--red);border:none;border-radius:6px;padding:7px 16px;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer}
-.search-btn:hover{background:var(--red2)}
-.filters{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.fb{background:transparent;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s}
-.fb:hover{opacity:.8}
-.fb.active,.fb:hover{background:rgba(255,255,255,.05)}
-.fb.t-contratos.active{border-color:var(--accent);color:var(--accent)}
-.fb.t-empresas.active{border-color:var(--green);color:var(--green)}
-.fb.t-funcionarios.active{border-color:var(--purple);color:var(--purple)}
-.fb.t-persona.active{border-color:var(--orange);color:var(--orange)}
-.fb.t-anomalias.active{border-color:var(--red2);color:var(--red2)}
-.stats-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.stat{background:var(--surface);padding:10px 12px;text-align:center}
-.stat-num{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff}
-.stat-label{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:.05em;text-transform:uppercase}
-.results-section{padding:12px 24px;max-width:1100px;margin:0 auto}
-.rh{font-size:11px;color:var(--muted);margin-bottom:10px}
-.rh span{color:var(--gold)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:7px;transition:border-color .15s}
-.card:hover{border-color:var(--red)}
-.card.c-empresa:hover{border-color:var(--green)}
-.card.c-funcionario{border-left:3px solid var(--purple)}
-.card.c-funcionario:hover{border-color:var(--purple)}
-.card.c-persona{border-left:3px solid var(--orange)}
-.ct{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:5px}
-.ctitle{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.3}
-.badge{font-size:10px;padding:2px 7px;border-radius:4px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;flex-shrink:0}
-.b-c{background:rgba(26,58,107,.5);color:#58A6FF;border:1px solid rgba(88,166,255,.3)}
-.b-e{background:rgba(88,200,88,.15);color:#58C858;border:1px solid rgba(88,200,88,.3)}
-.b-f{background:rgba(155,89,182,.2);color:#9B59B6;border:1px solid rgba(155,89,182,.3)}
-.b-a{background:rgba(192,57,43,.25);color:#E74C3C;border:1px solid rgba(231,76,60,.3)}
-.meta{display:flex;gap:10px;margin-top:8px;padding-top:7px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center}
-.mi{font-size:10px;color:var(--muted)}
-.mi strong{color:var(--accent)}
-.monto{font-size:12px;font-weight:700;color:var(--green)}
-.salario{font-size:12px;font-weight:700;color:var(--purple)}
-.rep{font-size:11px;color:var(--orange);font-weight:500}
-.doc-btn{display:inline-block;margin-top:7px;padding:4px 10px;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.3);border-radius:5px;font-size:11px;color:var(--accent);text-decoration:none;font-family:'IBM Plex Mono',monospace}
-.atag{display:inline-block;background:rgba(192,57,43,.2);color:#E74C3C;border:1px solid rgba(231,76,60,.3);border-radius:4px;font-size:10px;padding:2px 6px;margin-left:5px}
-.stitle{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:10px 0 5px;border-bottom:1px solid var(--border);margin-bottom:8px}
-.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
-.loading{text-align:center;padding:30px;color:var(--muted);font-size:12px}
-.pag{display:flex;gap:6px;justify-content:center;padding:14px 0;flex-wrap:wrap}
-.pb{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer}
-.pb:hover,.pb.active{border-color:var(--red2);color:var(--red2)}
-.pb:disabled{opacity:.3;cursor:default}
-footer{padding:12px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:16px}
-footer span{font-size:10px;color:var(--muted)}
-@media(max-width:640px){.stats-bar{grid-template-columns:repeat(3,1fr)}.ct{flex-direction:column}}
+:root{--bg:#0a0e13;--surface:#111820;--border:#1e2a36;--text:#d4dce8;--muted:#6b7f96;--white:#f0f4f8;--red:#dc3545;--red2:#ff4757;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--orange:#f59e0b;--gold:#eab308;--cyan:#06b6d4}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.status-bar{background:linear-gradient(90deg,#0d4a1e,#166534 40%,#15803d);padding:7px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(34,197,94,.25)}
+.status-bar .live{display:flex;align-items:center;gap:8px;font-size:11px;color:#bbf7d0;letter-spacing:.04em}
+.dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:b 2s infinite}
+@keyframes b{0%,100%{opacity:1}50%{opacity:.4}}
+.status-bar a{font-size:11px;color:#86efac;text-decoration:none}.status-bar a:hover{color:#fff}
+header{padding:24px 28px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+.logo{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:var(--white);letter-spacing:-.02em}
+.logo b{color:var(--red2)}
+.tagline{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.06em;text-transform:uppercase}
+.pw{font-size:10px;color:var(--muted);text-align:right}.pw a{color:var(--cyan);text-decoration:none}.pw a:hover{text-decoration:underline}
+.sa{padding:20px 28px 14px}.sb{position:relative;max-width:900px}
+.si{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 120px 14px 18px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--white);outline:none;transition:border-color .2s,box-shadow .2s}
+.si:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(220,53,69,.12)}.si::placeholder{color:var(--muted)}
+.btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--red);border:none;border-radius:7px;padding:9px 20px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;cursor:pointer}.btn:hover{background:var(--red2)}
+.tabs{display:flex;gap:4px;margin-top:12px;flex-wrap:wrap}
+.tab{background:0;border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab:hover{background:rgba(255,255,255,.03)}.tab.active{background:rgba(255,255,255,.06)}
+.tab.t-c.active{border-color:var(--blue);color:var(--blue)}.tab.t-e.active{border-color:var(--green);color:var(--green)}
+.tab.t-f.active{border-color:var(--purple);color:var(--purple)}.tab.t-p.active{border-color:var(--orange);color:var(--orange)}
+.tab.t-a.active{border-color:var(--red2);color:var(--red2)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.st{background:var(--surface);padding:12px 14px;text-align:center}
+.sn{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--white)}
+.sl{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
+.results{padding:16px 28px 40px;max-width:1000px}
+.rh{font-size:11px;color:var(--muted);margin-bottom:12px}.rh em{color:var(--gold);font-style:normal}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:8px;transition:border-color .15s}
+.card:hover{border-color:var(--blue)}
+.card.ce{border-left:3px solid var(--green)}.card.ce:hover{border-color:var(--green)}
+.card.cf{border-left:3px solid var(--purple)}.card.cf:hover{border-color:var(--purple)}
+.card.ca{border-left:3px solid var(--red)}.card.ca:hover{border-color:var(--red)}
+.ct{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
+.cn{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--white);line-height:1.35}
+.badge{font-size:9px;padding:3px 8px;border-radius:4px;white-space:nowrap;font-weight:500;flex-shrink:0}
+.bc{background:rgba(59,130,246,.15);color:var(--blue)}.be{background:rgba(34,197,94,.15);color:var(--green)}
+.bf{background:rgba(168,85,247,.15);color:var(--purple)}.ba{background:rgba(220,53,69,.15);color:var(--red2)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:11px;color:var(--muted)}
+.meta strong{color:var(--text);font-weight:500}
+.mo{color:var(--green);font-weight:600}.sa2{color:var(--purple);font-weight:600}.rep{color:var(--orange)}
+mark{background:rgba(220,53,69,.25);color:#fca5a5;padding:1px 3px;border-radius:2px}
+.db{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);border-radius:6px;color:var(--cyan);font-size:11px;text-decoration:none;transition:all .15s}
+.db:hover{background:rgba(6,182,212,.2);border-color:var(--cyan)}
+.sec{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}.sec span{font-weight:600}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.ld{text-align:center;padding:30px;color:var(--muted);font-size:12px}
+.ld::after{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:sp .6s linear infinite;margin-left:8px;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.pag{display:flex;gap:4px;margin-top:14px;justify-content:center}
+.pb{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer}
+.pb:hover{border-color:var(--blue);color:var(--blue)}.pb.active{background:var(--blue);color:#fff;border-color:var(--blue)}.pb:disabled{opacity:.3;cursor:default}
+footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;font-size:10px;color:var(--muted);flex-wrap:wrap;gap:6px}
+footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan)}
+@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}.si{padding-right:90px;font-size:13px}.results{padding:12px 16px 30px}header{padding:16px 16px 12px}.sa{padding:14px 16px 10px}.card{padding:12px 14px}.logo{font-size:26px}}
 </style>
 </head>
 <body>
-<div class="top-bar">
-  <span><span class="pulse"></span>EN VIVO — 579K contratos · 43K empresas · nóminas del Estado indexadas</span>
-  <span>datos.shcustomsoftware.info</span>
+<div class="status-bar">
+<div class="live"><span class="dot"></span>EN VIVO — 579K contratos · 43K empresas · 167K funcionarios indexados</div>
+<a href="https://archivord.com">archivord.com</a>
 </div>
 <header>
-  <div class="logo">Archivo<span>RD</span></div>
-  <div class="tagline">Centro de datos públicos · República Dominicana · 2015–2026</div>
+<div><div class="logo">Archivo<b>RD</b></div><div class="tagline">Motor de investigación pública · República Dominicana · 2015–2026</div></div>
+<div class="pw">Un producto de<br><a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a></div>
 </header>
-<div class="search-section">
-  <div class="search-wrap">
-    <input class="search-input" id="q" type="text" placeholder='Busca nombre, empresa, institución, cargo o contrato...'/>
-    <button class="search-btn" onclick="buscar()">Buscar</button>
-  </div>
-  <div class="filters">
-    <button class="fb t-contratos active" onclick="setTab(this,'contratos')">📄 Contratos</button>
-    <button class="fb t-empresas" onclick="setTab(this,'empresas')">🏢 Empresas</button>
-    <button class="fb t-funcionarios" onclick="setTab(this,'funcionarios')">🏛 Funcionarios</button>
-    <button class="fb t-persona" onclick="setTab(this,'persona')">👤 Buscar Persona</button>
-    <button class="fb t-anomalias" onclick="setTab(this,'anomalias')">⚠ Anomalías (1,632)</button>
-  </div>
+<div class="sa"><div class="sb">
+<input class="si" id="q" placeholder="Busca nombre, empresa, institución, cargo o contrato..." autocomplete="off"/>
+<button class="btn" onclick="buscar()">Buscar</button>
 </div>
-<div class="stats-bar">
-  <div class="stat"><div class="stat-num">579K</div><div class="stat-label">Contratos</div></div>
-  <div class="stat"><div class="stat-num">43K</div><div class="stat-label">Empresas</div></div>
-  <div class="stat"><div class="stat-num" id="s-func">—</div><div class="stat-label">Funcionarios</div></div>
-  <div class="stat"><div class="stat-num" style="color:var(--red2)">1,632</div><div class="stat-label">Anomalías</div></div>
-  <div class="stat"><div class="stat-num">340+</div><div class="stat-label">Instituciones</div></div>
-  <div class="stat"><div class="stat-num" id="s-found">—</div><div class="stat-label">Encontrados</div></div>
+<div class="tabs">
+<button class="tab t-c active" onclick="setTab(this,'contratos')">📄 Contratos</button>
+<button class="tab t-e" onclick="setTab(this,'empresas')">🏢 Empresas</button>
+<button class="tab t-f" onclick="setTab(this,'funcionarios')">🏛 Funcionarios</button>
+<button class="tab t-p" onclick="setTab(this,'persona')">👤 Buscar Persona</button>
+<button class="tab t-a" onclick="setTab(this,'anomalias')">⚠ Anomalías (1,632)</button>
+</div></div>
+<div class="stats">
+<div class="st"><div class="sn">579K</div><div class="sl">Contratos</div></div>
+<div class="st"><div class="sn">43K</div><div class="sl">Empresas</div></div>
+<div class="st"><div class="sn" id="sf">167K</div><div class="sl">Funcionarios</div></div>
+<div class="st"><div class="sn" style="color:var(--red2)">1,632</div><div class="sl">Anomalías</div></div>
+<div class="st"><div class="sn">340+</div><div class="sl">Instituciones</div></div>
+<div class="st"><div class="sn" id="sr">—</div><div class="sl">Encontrados</div></div>
 </div>
-<div class="results-section">
-  <div class="rh" id="rh"></div>
-  <div id="rl"><div class="loading">Conectando...</div></div>
-  <div class="pag" id="pag"></div>
-</div>
+<div class="results"><div class="rh" id="rh"></div><div id="rl"><div class="ld">Conectando</div></div><div class="pag" id="pag"></div></div>
 <footer>
-  <span>Fuentes: DGCP · datos.gob.do · MAP · Licencia ODbL</span>
-  <span>ArchivoRD v4.0 · datos públicos dominicanos</span>
+<span>Fuentes: DGCP · datos.gob.do · MAP · Licencia ODbL</span>
+<span>ArchivoRD v5.0 · <a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a> · código abierto</span>
 </footer>
 <script>
 const{createClient}=supabase;
-// Proyecto 1: contratos + empresas
 const sb=createClient("https://dovguconmpevxekjsyus.supabase.co","sb_publishable_b4g-gR0MbV2beUjHuaz4tg_66kQPQj5");
-// Proyecto 2: funcionarios
 const sb2=createClient("https://ecxvgzogwhsrislmfihh.supabase.co","sb_publishable_HjtzsafvsgRJ36c2DU-mPA_Tu5fZx1V");
-const PER=20;
-let tab='contratos',q='',page=1;
-
-const ANOMALIAS=[
-  {t:"Fraccionamiento — Min. Educación",i:"Ministerio de Educación",p:"BAING, SRL",r:"",m:36308000,f:"2025-12",d:"20 contratos dic 2025, todos bajo límite de compra directa, sumando RD$36,308,000."},
-  {t:"Fraccionamiento — Min. Educación",i:"Ministerio de Educación",p:"Martínez Torres Traveling, SRL",r:"",m:33475579,f:"2025-12",d:"20 contratos dic 2025 sumando RD$33,475,579."},
-  {t:"Fraccionamiento — Min. Educación",i:"Ministerio de Educación",p:"Inversiones Carafran, SRL",r:"",m:32240643,f:"2025-12",d:"18 contratos dic 2025 sumando RD$32,240,643."},
-  {t:"Fraccionamiento — Dir. Proyectos Estratégicos",i:"Dir. Proyectos Estratégicos Presidencia",p:"Wilfredo Díaz Productions, SRL",r:"Wilfredo Germán Díaz Ureña",m:32000000,f:"2024",d:"8 contratos audiovisuales un mes sumando RD$32M. Rep: Wilfredo Germán Díaz Ureña."},
-  {t:"Fraccionamiento — Min. Deportes",i:"Ministerio de Deportes",p:"Services Travel, SRL",r:"ANTONIO N. CHAHIN LAMA",m:32206372,f:"2018-06",d:"55 contratos jun 2018 sumando RD$32M. Rep: ANTONIO N. CHAHIN LAMA. Total: RD$601M en 1,285 contratos."},
-  {t:"Fraccionamiento — Min. Deportes",i:"Ministerio de Deportes",p:"HEECA, SRL",r:"",m:22520000,f:"2021-11",d:"5 contratos nov 2021 sumando RD$22,520,000."},
-  {t:"Fraccionamiento — OMSA",i:"OMSA",p:"Sigma Petroleum Corp, SAS",r:"",m:20248400,f:"2018-03",d:"9 contratos combustible en un mes sumando RD$20,248,400."},
-  {t:"Fraccionamiento — Min. Defensa",i:"Ministerio de Defensa",p:"Oficclin Comercial, SRL",r:"",m:19237154,f:"2023-11",d:"22 contratos nov 2023 sumando RD$19,237,154."},
-  {t:"Fraccionamiento — Fuerza Aérea",i:"Fuerza Aérea Dominicana",p:"Torcons, SRL",r:"",m:21115092,f:"2024-06",d:"17 contratos jun 2024 sumando RD$21,115,092."},
-  {t:"Fraccionamiento — Min. Relaciones Exteriores",i:"Ministerio de Relaciones Exteriores",p:"Agencia de Viajes Milena Tours, SRL",r:"",m:17787704,f:"2018-10",d:"31 contratos oct 2018 sumando RD$17,787,704."},
+const P=20;let tab='contratos',q='',pg=1;
+const AN=[
+{t:"Fraccionamiento",i:"Ministerio de Educación",p:"BAING, SRL",r:"",m:36308000,f:"2025-12",d:"20 contratos dic 2025, todos bajo límite compra directa, sumando RD$36.3M."},
+{t:"Fraccionamiento",i:"Ministerio de Educación",p:"Martínez Torres Traveling, SRL",r:"",m:33475579,f:"2025-12",d:"20 contratos dic 2025 sumando RD$33.5M."},
+{t:"Fraccionamiento",i:"Ministerio de Educación",p:"Inversiones Carafran, SRL",r:"",m:32240643,f:"2025-12",d:"18 contratos dic 2025 sumando RD$32.2M."},
+{t:"Fraccionamiento",i:"Dir. Proyectos Estratégicos",p:"Wilfredo Díaz Productions, SRL",r:"Wilfredo Germán Díaz Ureña",m:32000000,f:"2024",d:"8 contratos audiovisuales en un mes sumando RD$32M."},
+{t:"Fraccionamiento",i:"Ministerio de Deportes",p:"Services Travel, SRL",r:"ANTONIO N. CHAHIN LAMA",m:32206372,f:"2018-06",d:"55 contratos jun 2018 sumando RD$32M. Total: RD$601M en 1,285 contratos."},
+{t:"Fraccionamiento",i:"Ministerio de Deportes",p:"HEECA, SRL",r:"",m:22520000,f:"2021-11",d:"5 contratos nov 2021 sumando RD$22.5M."},
+{t:"Fraccionamiento",i:"OMSA",p:"Sigma Petroleum Corp, SAS",r:"",m:20248400,f:"2018-03",d:"9 contratos combustible en un mes sumando RD$20.2M."},
+{t:"Fraccionamiento",i:"Ministerio de Defensa",p:"Oficclin Comercial, SRL",r:"",m:19237154,f:"2023-11",d:"22 contratos nov 2023 sumando RD$19.2M."},
+{t:"Fraccionamiento",i:"Fuerza Aérea",p:"Torcons, SRL",r:"",m:21115092,f:"2024-06",d:"17 contratos jun 2024 sumando RD$21.1M."},
+{t:"Fraccionamiento",i:"Min. Relaciones Exteriores",p:"Milena Tours, SRL",r:"",m:17787704,f:"2018-10",d:"31 contratos oct 2018 sumando RD$17.8M."},
 ];
-
 function fmt(n){const v=parseFloat(n||0);if(v>=1e9)return`RD$${(v/1e9).toFixed(1)}B`;if(v>=1e6)return`RD$${(v/1e6).toFixed(1)}M`;if(v>0)return`RD$${v.toLocaleString('es-DO')}`;return'—';}
-function hl(t,s){if(!s||s.length<2)return t||'';const w=s.toLowerCase().split(/\s+/).filter(x=>x.length>2);return w.reduce((r,w)=>r.replace(new RegExp(w,'gi'),m=>`<mark style="background:rgba(192,57,43,.3);color:#F08080;padding:1px 2px;border-radius:2px">${m}</mark>`),String(t||''));}
-function setTab(btn,t){document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');tab=t;page=1;render();}
-function buscar(){q=document.getElementById('q').value.trim();page=1;render();}
+function hl(t,s){if(!s||s.length<2)return t||'';const w=s.toLowerCase().split(/\s+/).filter(x=>x.length>1);return w.reduce((r,w)=>r.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`),String(t||''));}
+function setTab(b,t){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');tab=t;pg=1;render();}
+function buscar(){q=document.getElementById('q').value.trim();pg=1;render();}
 document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')buscar();});
+function render(){document.getElementById('pag').innerHTML='';if(tab==='anomalias')rA();else if(tab==='empresas')rE();else if(tab==='funcionarios')rF();else if(tab==='persona')rP();else rC();}
 
-function render(){
-  document.getElementById('pag').innerHTML='';
-  if(tab==='anomalias'){rAnomalias();return;}
-  if(tab==='empresas'){rEmpresas();return;}
-  if(tab==='funcionarios'){rFuncionarios();return;}
-  if(tab==='persona'){rPersona();return;}
-  rContratos();
-}
+async function rC(){
+document.getElementById('rl').innerHTML='<div class="ld">Buscando contratos</div>';
+try{let d,e;if(q&&q.length>=2){const r=await sb.rpc('buscar_contratos',{termino:q});d=r.data;e=r.error;}else{const f=(pg-1)*P,t=f+P-1;const r=await sb.from('contratos').select('*').order('monto',{ascending:false}).range(f,t);d=r.data;e=r.error;}
+if(e)throw e;const n=d?d.length:0;document.getElementById('sr').textContent=q?n:'579,001';
+document.getElementById('rh').innerHTML=q?`${n} resultado(s) para <em>"${q}"</em>`:'579,001 contratos — <em>mayor monto primero</em>';
+if(!q)rPg(pg,100);
+document.getElementById('rl').innerHTML=n?d.map(d=>`<div class="card"><div class="ct"><div class="cn">${hl(d.titulo||'Sin título',q)}</div><span class="badge bc">Contrato</span></div><div style="font-size:12px;color:var(--muted)">Proveedor: <strong style="color:var(--text)">${hl(d.proveedor||'No especificado',q)}</strong></div><div class="meta"><span>Institución: <strong>${hl(d.institucion||'—',q)}</strong></span><span>Fecha: <strong>${d.fecha||'—'}</strong></span><span>Estado: <strong>${d.estado||'—'}</strong></span><span>Modalidad: <strong>${d.modalidad||'—'}</strong></span><span class="mo">${fmt(d.monto)}</span></div>${d.url_doc?`<a class="db" href="${d.url_doc}" target="_blank">📎 Ver documento original →</a>`:''}</div>`).join(''):'<div class="empty">Sin resultados.</div>';
+}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
 
-// ── ANOMALÍAS ────────────────────────────────────────────────
-function rAnomalias(){
-  const lq=q.toLowerCase();
-  let data=ANOMALIAS;
-  if(q)data=data.filter(a=>a.t.toLowerCase().includes(lq)||a.p.toLowerCase().includes(lq)||a.i.toLowerCase().includes(lq)||(a.r||'').toLowerCase().includes(lq));
-  document.getElementById('s-found').textContent=data.length;
-  document.getElementById('rh').innerHTML=`${data.length} anomalías detectadas — <span>algoritmo ArchivoRD</span>`;
-  document.getElementById('rl').innerHTML=data.length?data.map(a=>`
-    <div class="card">
-      <div class="ct"><div class="ctitle">${hl(a.t,q)}<span class="atag">⚠ 9/10</span></div><span class="badge b-a">ANOMALÍA</span></div>
-      <div style="font-size:12px;color:var(--muted)">${hl(a.d,q)}</div>
-      <div class="meta">
-        <span class="mi">Institución: <strong>${a.i}</strong></span>
-        <span class="mi">Proveedor: <strong>${hl(a.p,q)}</strong></span>
-        ${a.r?`<span class="rep">👤 ${hl(a.r,q)}</span>`:''}
-        <span class="mi">Período: <strong>${a.f}</strong></span>
-        <span class="monto">${fmt(a.m)}</span>
-      </div>
-    </div>`).join(''):'<div class="empty">Sin resultados.</div>';
-}
+async function rE(){
+document.getElementById('rl').innerHTML='<div class="ld">Buscando empresas</div>';
+try{const f=(pg-1)*P,t=f+P-1;let qr=sb.from('empresas').select('*',{count:'exact'});
+if(q&&q.length>=2)qr=qr.or(`nombre.ilike.%${q}%,representante.ilike.%${q}%,rnc.ilike.%${q}%`);
+const{data:d,error:e,count:c}=await qr.order('monto_total',{ascending:false}).range(f,t);if(e)throw e;const tt=c||0;
+document.getElementById('sr').textContent=tt>=1000?(tt/1000).toFixed(0)+'K':tt;
+document.getElementById('rh').innerHTML=`${tt.toLocaleString()} empresa(s)${q?` con <em>"${q}"</em>`:'— <em>mayor monto primero</em>'}`;
+rPg(pg,Math.ceil(tt/P));
+document.getElementById('rl').innerHTML=d&&d.length?d.map(e=>`<div class="card ce"><div class="ct"><div class="cn">${hl(e.nombre||'',q)}</div><span class="badge be">Empresa</span></div><div class="meta"><span>RNC: <strong>${e.rnc||'—'}</strong></span><span>Contratos: <strong>${e.contratos_count||0}</strong></span><span>Región: <strong>${e.region||'—'}</strong></span>${e.representante&&e.representante!='nan'?`<span class="rep">👤 ${hl(e.representante,q)}</span>`:''}<span class="mo">${fmt(e.monto_total)}</span></div>${e.direccion&&e.direccion!='nan'?`<div style="font-size:11px;color:var(--muted);margin-top:6px">📍 ${String(e.direccion).substring(0,90)}</div>`:''}</div>`).join(''):'<div class="empty">Sin resultados.</div>';
+}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
 
-// ── CONTRATOS ────────────────────────────────────────────────
-async function rContratos(){
-  document.getElementById('rl').innerHTML='<div class="loading">Buscando contratos...</div>';
-  try{
-    const from=(page-1)*PER,to=from+PER-1;
-    let data,error;
-    if(q&&q.length>=2){
-      // Usar función RPC con timeout propio
-      const res=await sb.rpc('buscar_contratos',{termino:q});
-      data=res.data; error=res.error;
-    } else {
-      const res=await sb.from('contratos').select('*').order('monto',{ascending:false}).range(from,to);
-      data=res.data; error=res.error;
-    }
-    if(error)throw error;
-    const hasMore=data&&data.length===PER;
-    const total=q?`${data.length}${hasMore?'+':''}`:'579,001';
-    document.getElementById('s-found').textContent=total;
-    document.getElementById('rh').innerHTML=q?`${data.length} resultado(s) para <span>"${q}"</span>`:'579,001 contratos — <span>mayor monto primero</span>';
-    rPag(page,q?1:hasMore?page+1:page);
-    document.getElementById('rl').innerHTML=data&&data.length?data.map(d=>`
-      <div class="card">
-        <div class="ct"><div class="ctitle">${hl(d.titulo||'Sin título',q)}</div><span class="badge b-c">Contrato</span></div>
-        <div style="font-size:12px;color:var(--muted)">Proveedor: <strong style="color:var(--text)">${hl(d.proveedor||'No especificado',q)}</strong></div>
-        <div class="meta">
-          <span class="mi">Institución: <strong>${hl(d.institucion||'—',q)}</strong></span>
-          <span class="mi">Fecha: <strong>${d.fecha||'—'}</strong></span>
-          <span class="mi">Estado: <strong>${d.estado||'—'}</strong></span>
-          <span class="mi">Modalidad: <strong>${d.modalidad||'—'}</strong></span>
-          <span class="monto">${fmt(d.monto)}</span>
-        </div>
-        ${d.url_doc?`<a class="doc-btn" href="${d.url_doc}" target="_blank">📎 Ver documento original →</a>`:''}
-      </div>`).join(''):'<div class="empty">Sin resultados. Intenta otro término.</div>';
-  }catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
-}
+async function rF(){
+document.getElementById('rl').innerHTML='<div class="ld">Buscando funcionarios</div>';
+try{const f=(pg-1)*P,t=f+P-1;let qr=sb2.from('funcionarios').select('*',{count:'exact'});
+if(q&&q.length>=2)qr=qr.or(`nombre.ilike.%${q}%,cargo.ilike.%${q}%,institucion.ilike.%${q}%`);
+const{data:d,error:e,count:c}=await qr.order('salario',{ascending:false}).range(f,t);if(e)throw e;const tt=c||0;
+document.getElementById('sr').textContent=tt>=1000?(tt/1000).toFixed(0)+'K':tt;
+document.getElementById('sf').textContent=tt>=1000?(tt/1000).toFixed(0)+'K':tt||'—';
+document.getElementById('rh').innerHTML=`${tt.toLocaleString()} funcionario(s)${q?` para <em>"${q}"</em>`:'— <em>mayor salario primero</em>'}`;
+rPg(pg,Math.ceil(tt/P));
+document.getElementById('rl').innerHTML=d&&d.length?d.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre||'',q)}</div><span class="badge bf">Funcionario</span></div><div style="font-size:12px;color:var(--muted)">${hl(f.cargo||'—',q)}</div><div class="meta"><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.departamento?`<span>Área: <strong>${f.departamento}</strong></span>`:''}${f.cedula?`<span>Cédula: <strong>${f.cedula}</strong></span>`:''}${f.estatus?`<span>Estatus: <strong>${f.estatus}</strong></span>`:''}${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join(''):'<div class="empty">Sin resultados.</div>';
+}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
 
-// ── EMPRESAS ─────────────────────────────────────────────────
-async function rEmpresas(){
-  document.getElementById('rl').innerHTML='<div class="loading">Buscando empresas...</div>';
-  try{
-    const from=(page-1)*PER,to=from+PER-1;
-    let query=sb.from('empresas').select('*',{count:'exact'});
-    if(q&&q.length>=2)query=query.or(`nombre.ilike.%${q}%,representante.ilike.%${q}%,rnc.ilike.%${q}%`);
-    const{data,error,count}=await query.order('monto_total',{ascending:false}).range(from,to);
-    if(error)throw error;
-    const total=count||0;
-    document.getElementById('s-found').textContent=total>=1000?(total/1000).toFixed(0)+'K':total;
-    document.getElementById('rh').innerHTML=`${total.toLocaleString()} empresa(s)${q?` con "<span>${q}</span>"`:'— <span>mayor monto primero</span>'}`;
-    rPag(page,Math.ceil(total/PER));
-    document.getElementById('rl').innerHTML=data&&data.length?data.map(e=>`
-      <div class="card c-empresa">
-        <div class="ct"><div class="ctitle">${hl(e.nombre||'Sin nombre',q)}</div><span class="badge b-e">Empresa</span></div>
-        <div class="meta">
-          <span class="mi">RNC: <strong>${e.rnc||'—'}</strong></span>
-          <span class="mi">Contratos: <strong>${e.contratos_count||0}</strong></span>
-          <span class="mi">Región: <strong>${e.region||'—'}</strong></span>
-          ${e.representante&&e.representante!='nan'?`<span class="rep">👤 ${hl(e.representante,q)}</span>`:''}
-          ${e.email&&e.email!='nan'?`<span class="mi">✉ ${e.email}</span>`:''}
-          <span class="monto">${fmt(e.monto_total)}</span>
-        </div>
-        ${e.direccion&&e.direccion!='nan'?`<div style="font-size:11px;color:var(--muted);margin-top:5px">📍 ${String(e.direccion).substring(0,80)}</div>`:''}
-      </div>`).join(''):'<div class="empty">Sin resultados.</div>';
-  }catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
-}
+async function rP(){
+if(!q||q.length<2){document.getElementById('rh').innerHTML='Escribe un nombre para buscar en todas las fuentes';document.getElementById('rl').innerHTML='<div class="empty">Ejemplo: "Antonio Chahin" · "Fausto Mata" · "Plaza Lama"</div>';document.getElementById('sr').textContent='—';return;}
+document.getElementById('rl').innerHTML='<div class="ld">Buscando en contratos, empresas y funcionarios</div>';
+try{const[eR,cR,fR]=await Promise.all([sb.from('empresas').select('*').or(`representante.ilike.%${q}%,nombre.ilike.%${q}%`).order('monto_total',{ascending:false}).limit(15),sb.rpc('buscar_contratos',{termino:q}),sb2.from('funcionarios').select('*').ilike('nombre',`%${q}%`).order('salario',{ascending:false}).limit(15)]);
+const emp=eR.data||[],con=cR.data||[],fun=fR.data||[];const tt=emp.length+con.length+fun.length;
+document.getElementById('sr').textContent=tt;document.getElementById('rh').innerHTML=`Búsqueda unificada: <em>"${q}"</em> — ${tt} resultados en todas las fuentes`;let h='';
+if(fun.length){const s=fun.reduce((a,f)=>a+parseFloat(f.salario||0),0);h+=`<div class="sec">🏛 <span>Funcionario público</span> — ${fun.length} registro(s)${s>0?` · Salario: <span style="color:var(--purple)">RD$${s.toLocaleString('es-DO')}/mes</span>`:''}</div>`;h+=fun.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre,q)}</div><span class="badge bf">Funcionario</span></div><div class="meta"><span>Cargo: <strong>${hl(f.cargo||'—',q)}</strong></span><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join('');}
+if(emp.length){const m=emp.reduce((a,e)=>a+parseFloat(e.monto_total||0),0);h+=`<div class="sec" style="margin-top:14px">🏢 <span>Empresas vinculadas</span> — ${emp.length} empresa(s) · Total: <span style="color:var(--green)">${fmt(m)}</span></div>`;h+=emp.map(e=>`<div class="card ce"><div class="ct"><div class="cn">${hl(e.nombre,q)}</div><span class="badge be">Empresa</span></div><div class="meta"><span>RNC: <strong>${e.rnc||'—'}</strong></span><span>Contratos: <strong>${e.contratos_count||0}</strong></span>${e.representante&&e.representante!='nan'?`<span class="rep">👤 ${hl(e.representante,q)}</span>`:''}<span class="mo">${fmt(e.monto_total)}</span></div></div>`).join('');}
+if(con.length){h+=`<div class="sec" style="margin-top:14px">📄 <span>Contratos</span> — ${con.length} contrato(s)</div>`;h+=con.map(d=>`<div class="card"><div class="ct"><div class="cn">${hl(d.titulo||'Sin título',q)}</div><span class="badge bc">Contrato</span></div><div class="meta"><span>Proveedor: <strong>${hl(d.proveedor||'—',q)}</strong></span><span>Institución: <strong>${hl(d.institucion||'—',q)}</strong></span><span>Fecha: <strong>${d.fecha||'—'}</strong></span><span class="mo">${fmt(d.monto)}</span></div>${d.url_doc?`<a class="db" href="${d.url_doc}" target="_blank">📎 Ver documento →</a>`:''}</div>`).join('');}
+if(!tt)h='<div class="empty">Sin resultados. Intenta con apellido o empresa.</div>';document.getElementById('rl').innerHTML=h;
+}catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
 
-// ── FUNCIONARIOS ─────────────────────────────────────────────
-async function rFuncionarios(){
-  document.getElementById('rl').innerHTML='<div class="loading">Buscando funcionarios...</div>';
-  try{
-    const from=(page-1)*PER,to=from+PER-1;
-    let query=sb2.from('funcionarios').select('*',{count:'exact'});
-    if(q&&q.length>=2)query=query.or(`nombre.ilike.%${q}%,cargo.ilike.%${q}%,institucion.ilike.%${q}%,cedula.ilike.%${q}%`);
-    const{data,error,count}=await query.order('salario',{ascending:false}).range(from,to);
-    if(error)throw error;
-    const total=count||0;
-    document.getElementById('s-found').textContent=total>=1000?(total/1000).toFixed(0)+'K':total;
-    document.getElementById('s-func').textContent=total>=1000?(total/1000).toFixed(0)+'K':total||'—';
-    document.getElementById('rh').innerHTML=`${total.toLocaleString()} funcionario(s)${q?` para "<span>${q}</span>"`:'— <span>mayor salario primero</span>'}`;
-    rPag(page,Math.ceil(total/PER));
-    document.getElementById('rl').innerHTML=data&&data.length?data.map(f=>`
-      <div class="card c-funcionario">
-        <div class="ct"><div class="ctitle">${hl(f.nombre||'Sin nombre',q)}</div><span class="badge b-f">Funcionario</span></div>
-        <div style="font-size:12px;color:var(--muted)">${hl(f.cargo||'—',q)}</div>
-        <div class="meta">
-          <span class="mi">Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>
-          ${f.departamento?`<span class="mi">Área: <strong>${f.departamento}</strong></span>`:''}
-          ${f.cedula?`<span class="mi">Cédula: <strong>${f.cedula}</strong></span>`:''}
-          ${f.estatus?`<span class="mi">Estatus: <strong>${f.estatus}</strong></span>`:''}
-          ${f.salario>0?`<span class="salario">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}
-        </div>
-      </div>`).join(''):'<div class="empty">Funcionarios cargando... corre el scraper y vuelve.</div>';
-  }catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
-}
+function rA(){const l=q.toLowerCase();let d=AN;if(q)d=d.filter(a=>a.t.toLowerCase().includes(l)||a.p.toLowerCase().includes(l)||a.i.toLowerCase().includes(l)||(a.r||'').toLowerCase().includes(l));
+document.getElementById('sr').textContent=d.length;document.getElementById('rh').innerHTML=`${d.length} anomalías — <em>algoritmo ArchivoRD</em>`;
+document.getElementById('rl').innerHTML=d.length?d.map(a=>`<div class="card ca"><div class="ct"><div class="cn">${hl(a.t+' — '+a.i,q)}</div><span class="badge ba">⚠ ANOMALÍA</span></div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">${hl(a.d,q)}</div><div class="meta"><span>Proveedor: <strong>${hl(a.p,q)}</strong></span>${a.r?`<span class="rep">👤 ${hl(a.r,q)}</span>`:''}<span>Período: <strong>${a.f}</strong></span><span class="mo">${fmt(a.m)}</span></div></div>`).join(''):'<div class="empty">Sin resultados.</div>';}
 
-// ── PERSONA — búsqueda unificada ─────────────────────────────
-async function rPersona(){
-  if(!q||q.length<3){
-    document.getElementById('rh').innerHTML='Escribe un nombre completo para buscar';
-    document.getElementById('rl').innerHTML='<div class="empty">Ejemplo: "Antonio Chahin" · "Leonel Fernández" · "Nuria Piera"</div>';
-    document.getElementById('s-found').textContent='—';
-    return;
-  }
-  document.getElementById('rl').innerHTML='<div class="loading">Buscando en todas las fuentes...</div>';
-  try{
-    const[eR,cR,fR]=await Promise.all([
-      sb.from('empresas').select('*').ilike('representante',`%${q}%`).order('monto_total',{ascending:false}).limit(10),
-      sb.rpc('buscar_contratos',{termino:q}),
-      sb2.from('funcionarios').select('*').ilike('nombre',`%${q}%`).order('salario',{ascending:false}).limit(10),
-    ]);
-    const emp=eR.data||[],cont=cR.data||[],func=fR.data||[];
-    const total=emp.length+cont.length+func.length;
-    document.getElementById('s-found').textContent=total;
-    document.getElementById('rh').innerHTML=`Búsqueda unificada: <span>"${q}"</span> — ${total} resultados en todas las fuentes`;
-    let html='';
-
-    if(func.length){
-      const st=func.reduce((s,f)=>s+parseFloat(f.salario||0),0);
-      html+=`<div class="stitle">🏛 Aparece como funcionario en ${func.length} registro(s)${st>0?` — Salario total: <span style="color:var(--purple)">RD$${st.toLocaleString('es-DO')}/mes</span>`:''}</div>`;
-      html+=func.map(f=>`
-        <div class="card c-funcionario">
-          <div class="ct"><div class="ctitle">${hl(f.nombre,q)}</div><span class="badge b-f">Funcionario</span></div>
-          <div class="meta">
-            <span class="mi">Cargo: <strong>${f.cargo||'—'}</strong></span>
-            <span class="mi">Institución: <strong>${f.institucion||'—'}</strong></span>
-            ${f.cedula?`<span class="mi">Cédula: <strong>${f.cedula}</strong></span>`:''}
-            ${f.salario>0?`<span class="salario">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}
-          </div>
-        </div>`).join('');
-    }
-
-    if(emp.length){
-      const mt=emp.reduce((s,e)=>s+parseFloat(e.monto_total||0),0);
-      html+=`<div class="stitle" style="margin-top:14px">🏢 Aparece como representante en ${emp.length} empresa(s) — Total cobrado: <span style="color:var(--green)">${fmt(mt)}</span></div>`;
-      html+=emp.map(e=>`
-        <div class="card c-empresa">
-          <div class="ct"><div class="ctitle">${e.nombre}</div><span class="badge b-e">Representante</span></div>
-          <div class="meta">
-            <span class="mi">RNC: <strong>${e.rnc||'—'}</strong></span>
-            <span class="mi">Contratos: <strong>${e.contratos_count||0}</strong></span>
-            <span class="rep">👤 ${hl(e.representante,q)}</span>
-            <span class="monto">${fmt(e.monto_total)}</span>
-          </div>
-          ${e.direccion&&e.direccion!='nan'?`<div style="font-size:11px;color:var(--muted);margin-top:5px">📍 ${String(e.direccion).substring(0,80)}</div>`:''}
-        </div>`).join('');
-    }
-
-    if(cont.length){
-      html+=`<div class="stitle" style="margin-top:14px">📄 Aparece en ${cont.length} contrato(s)</div>`;
-      html+=cont.map(d=>`
-        <div class="card">
-          <div class="ct"><div class="ctitle">${hl(d.titulo||'Sin título',q)}</div><span class="badge b-c">Contrato</span></div>
-          <div class="meta">
-            <span class="mi">Proveedor: <strong>${hl(d.proveedor||'—',q)}</strong></span>
-            <span class="mi">Institución: <strong>${d.institucion||'—'}</strong></span>
-            <span class="mi">Fecha: <strong>${d.fecha||'—'}</strong></span>
-            <span class="monto">${fmt(d.monto)}</span>
-          </div>
-          ${d.url_doc?`<a class="doc-btn" href="${d.url_doc}" target="_blank">📎 Ver documento →</a>`:''}
-        </div>`).join('');
-    }
-
-    if(!total)html='<div class="empty">Sin resultados. Intenta con apellido o nombre completo.</div>';
-    document.getElementById('rl').innerHTML=html;
-  }catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
-}
-
-function rPag(cur,total){
-  if(total<=1){document.getElementById('pag').innerHTML='';return;}
-  let h=`<button class="pb" onclick="goP(${cur-1})" ${cur>1?'':'disabled'}>← Ant</button>`;
-  const s=Math.max(1,cur-2),en=Math.min(total,cur+2);
-  for(let p=s;p<=en;p++)h+=`<button class="pb ${p===cur?'active':''}" onclick="goP(${p})">${p}</button>`;
-  h+=`<button class="pb" onclick="goP(${cur+1})" ${cur<total?'':'disabled'}>Sig →</button>`;
-  document.getElementById('pag').innerHTML=h;
-}
-function goP(p){page=p;render();window.scrollTo(0,0);}
-
-// Cargar count de funcionarios al inicio
-async function initStats(){
-  try{
-    const{count}=await sb2.from('funcionarios').select('*',{count:'exact',head:true});
-    if(count>0)document.getElementById('s-func').textContent=count>=1000?(count/1000).toFixed(0)+'K':count;
-  }catch(e){}
-}
-initStats();
-render();
+function rPg(c,t){if(t<=1){document.getElementById('pag').innerHTML='';return;}let h=`<button class="pb" onclick="goP(${c-1})" ${c>1?'':'disabled'}>← Ant</button>`;const s=Math.max(1,c-2),e=Math.min(t,c+2);for(let p=s;p<=e;p++)h+=`<button class="pb ${p===c?'active':''}" onclick="goP(${p})">${p}</button>`;h+=`<button class="pb" onclick="goP(${c+1})" ${c<t?'':'disabled'}>Sig →</button>`;document.getElementById('pag').innerHTML=h;}
+function goP(p){pg=p;render();window.scrollTo(0,0);}
+async function init(){try{const{count}=await sb2.from('funcionarios').select('*',{count:'exact',head:true});if(count>0)document.getElementById('sf').textContent=count>=1000?(count/1000).toFixed(0)+'K':count;}catch(e){}render();}
+init();
 </script>
 </body>
 </html>
