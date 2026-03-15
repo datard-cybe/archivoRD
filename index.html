@@ -4,512 +4,341 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArchivoRD — Datos Públicos de República Dominicana</title>
-<meta name="description" content="Plataforma de periodismo de datos cívico. Contratos, empresas, funcionarios y nóminas del Estado dominicano.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#222;
-  --text:#e8e8e8;--text2:#888;--accent:#00e676;--accent2:#00c853;
-  --red:#ff5252;--yellow:#ffd740;--blue:#448aff;
-  --font:'DM Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
-  --radius:8px;
+  --bg:#0b0d0f;--s1:#12151a;--s2:#1a1e25;--border:#252a33;
+  --text:#e2e4e8;--t2:#7a8194;--green:#00e676;--green2:#00c853;
+  --red:#ff5252;--blue:#448aff;--purple:#b388ff;--orange:#ffab40;--cyan:#18ffff;
+  --font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:10px;
 }
 html{font-size:15px}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;line-height:1.6}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6}
+a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-/* LIVE BAR */
-.live-bar{background:var(--accent);color:#000;text-align:center;padding:6px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
-.live-dot{width:8px;height:8px;background:#000;border-radius:50%;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.live{background:linear-gradient(90deg,#00c853,#00e676);color:#000;text-align:center;padding:7px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
+.dot{width:7px;height:7px;background:#000;border-radius:50%;animation:p 1.4s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* HEADER */
-header{padding:2rem 1.5rem 1rem;max-width:1200px;margin:0 auto}
-header h1{font-size:1.8rem;font-weight:700;letter-spacing:-.02em}
-header h1 span{color:var(--accent)}
-header p{color:var(--text2);font-size:.85rem;margin-top:.3rem}
-.stats-bar{display:flex;gap:1.5rem;margin-top:1rem;flex-wrap:wrap}
-.stat{font-family:var(--mono);font-size:.8rem;color:var(--text2)}
-.stat b{color:var(--accent);font-weight:500}
+header{padding:2rem 2rem 1rem;max-width:1280px;margin:0 auto}
+h1{font-size:2rem;font-weight:700;letter-spacing:-.03em}
+h1 span{color:var(--green)}
+header>p{color:var(--t2);font-size:.85rem;margin-top:.2rem}
+.hstats{display:flex;gap:1.8rem;margin-top:1rem;flex-wrap:wrap}
+.hstats div{font-family:var(--mono);font-size:.8rem;color:var(--t2)}
+.hstats b{color:var(--green);font-weight:600}
 
-/* NAV TABS */
-nav{max-width:1200px;margin:1rem auto 0;padding:0 1.5rem;display:flex;gap:4px;border-bottom:1px solid var(--border);overflow-x:auto}
-nav button{background:none;border:none;color:var(--text2);font-family:var(--font);font-size:.85rem;font-weight:500;padding:.6rem 1rem;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+nav{max-width:1280px;margin:.8rem auto 0;padding:0 2rem;display:flex;gap:2px;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav button{background:none;border:none;color:var(--t2);font-family:var(--font);font-size:.82rem;font-weight:600;padding:.65rem 1.1rem;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
 nav button:hover{color:var(--text)}
-nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+nav button.on{color:var(--green);border-bottom-color:var(--green)}
 
-/* MAIN */
-main{max-width:1200px;margin:0 auto;padding:1.5rem}
-.tab-content{display:none}
-.tab-content.active{display:block}
+main{max-width:1280px;margin:0 auto;padding:1.5rem 2rem 3rem}
+.tab{display:none}.tab.on{display:block}
 
-/* SEARCH */
-.search-box{display:flex;gap:8px;margin-bottom:1.5rem}
-.search-box input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.9rem;padding:.7rem 1rem;border-radius:var(--radius);outline:none;transition:border .2s}
-.search-box input:focus{border-color:var(--accent)}
-.search-box input::placeholder{color:var(--text2)}
-.search-box button{background:var(--accent);color:#000;border:none;font-family:var(--font);font-weight:600;font-size:.85rem;padding:.7rem 1.5rem;border-radius:var(--radius);cursor:pointer;transition:background .2s;white-space:nowrap}
-.search-box button:hover{background:var(--accent2)}
-.search-box button:disabled{opacity:.5;cursor:not-allowed}
+.sbox{display:flex;gap:8px;margin-bottom:1.2rem}
+.sbox input{flex:1;background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.88rem;padding:.7rem 1rem;border-radius:var(--r);outline:none;transition:.2s}
+.sbox input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,230,118,.12)}
+.sbox input::placeholder{color:var(--t2)}
+.sbox button{background:var(--green);color:#000;border:none;font-family:var(--font);font-weight:700;font-size:.82rem;padding:.7rem 1.6rem;border-radius:var(--r);cursor:pointer;transition:.15s;white-space:nowrap}
+.sbox button:hover{background:var(--green2);transform:translateY(-1px)}
 
-/* FILTERS */
-.filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.filter-row select{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.8rem;padding:.5rem .8rem;border-radius:var(--radius);outline:none;cursor:pointer}
+.filters{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.filters select{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.78rem;padding:.45rem .8rem;border-radius:var(--r);outline:none;cursor:pointer}
 
-/* RESULTS */
-.results-info{color:var(--text2);font-size:.8rem;margin-bottom:1rem;font-family:var(--mono)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:8px;transition:border-color .2s}
-.card:hover{border-color:var(--accent)}
-.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.5rem}
-.card-name{font-weight:600;font-size:.95rem}
-.card-badge{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
-.badge-contrato{background:#1a237e;color:#82b1ff}
-.badge-empresa{background:#1b5e20;color:#b9f6ca}
-.badge-funcionario{background:#4a148c;color:#ea80fc}
-.badge-nomina{background:#bf360c;color:#ffab91}
-.badge-anomalia{background:#b71c1c;color:#ff8a80}
-.card-detail{font-size:.8rem;color:var(--text2);line-height:1.8}
-.card-detail span{color:var(--text);font-weight:500}
-.card-money{font-family:var(--mono);color:var(--accent);font-weight:600}
+.info{color:var(--t2);font-size:.78rem;margin-bottom:.8rem;font-family:var(--mono)}
 
-/* NOMINA STATS */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1.5rem}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
-.stat-card h3{font-size:.8rem;color:var(--text2);font-weight:500;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em}
-.stat-card .big-num{font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--accent)}
-.stat-card .details{font-size:.75rem;color:var(--text2);margin-top:.4rem;line-height:1.8}
-.stat-card .details span{color:var(--text)}
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:6px;border-left:3px solid var(--border);transition:.2s}
+.card:hover{border-color:var(--green);background:var(--s2)}
+.card.c-contrato{border-left-color:var(--blue)}
+.card.c-empresa{border-left-color:var(--green)}
+.card.c-func{border-left-color:var(--purple)}
+.card.c-nomina{border-left-color:var(--orange)}
+.card.c-anomalia{border-left-color:var(--red)}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;margin-bottom:.35rem}
+.cn{font-weight:600;font-size:.92rem;line-height:1.3}
+.badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0}
+.b-contrato{background:#1a237e;color:#82b1ff}
+.b-empresa{background:#1b5e20;color:#b9f6ca}
+.b-func{background:#4a148c;color:#ea80fc}
+.b-nomina{background:#e65100;color:#ffcc80}
+.b-anomalia{background:#b71c1c;color:#ff8a80}
+.cd{font-size:.78rem;color:var(--t2);line-height:1.9}
+.cd span{color:var(--text);font-weight:500}
+.money{font-family:var(--mono);font-weight:600}
+.money-g{color:var(--green)}
+.money-r{color:var(--red)}
 
-/* LOADING */
-.loading{text-align:center;padding:3rem;color:var(--text2);font-size:.85rem}
-.loading::after{content:'';display:block;width:24px;height:24px;margin:1rem auto 0;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* STATS GRID */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:1.5rem}
+.scard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1rem;border-top:3px solid var(--orange)}
+.scard h3{font-size:.72rem;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem}
+.scard .bn{font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--green)}
+.scard .sd{font-size:.72rem;color:var(--t2);margin-top:.4rem;line-height:1.9}
+.scard .sd span{color:var(--text)}
 
-/* EMPTY */
-.empty{text-align:center;padding:3rem;color:var(--text2);font-size:.85rem}
+.loading{text-align:center;padding:2.5rem;color:var(--t2);font-size:.82rem}
+.loading::after{content:'';display:block;width:20px;height:20px;margin:.8rem auto 0;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:sp .5s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:2.5rem;color:var(--t2);font-size:.82rem}
 
-/* FOOTER */
-footer{text-align:center;padding:2rem 1rem;color:var(--text2);font-size:.75rem;border-top:1px solid var(--border);margin-top:3rem}
-footer a{color:var(--accent)}
+footer{text-align:center;padding:2rem 1rem;color:var(--t2);font-size:.72rem;border-top:1px solid var(--border)}
 
-/* RESPONSIVE */
 @media(max-width:640px){
-  html{font-size:14px}
-  header{padding:1.5rem 1rem .8rem}
-  main{padding:1rem}
-  .card-header{flex-direction:column;gap:.3rem}
-  .stats-grid{grid-template-columns:1fr}
+  html{font-size:13.5px}
+  header,main{padding-left:1rem;padding-right:1rem}
+  nav{padding:0 1rem}
+  .ch{flex-direction:column;gap:.2rem}
+  .sgrid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<div class="live-bar"><span class="live-dot"></span> EN VIVO — Base de datos actualizada continuamente</div>
+<div class="live"><span class="dot"></span> EN VIVO — Base de datos actualizada continuamente</div>
 
 <header>
   <h1>Archivo<span>RD</span></h1>
   <p>Periodismo de datos cívico — República Dominicana</p>
-  <div class="stats-bar">
-    <div class="stat"><b>579K</b> contratos</div>
-    <div class="stat"><b>43K</b> empresas</div>
-    <div class="stat"><b>167K</b> funcionarios</div>
-    <div class="stat"><b>268K</b> nóminas</div>
+  <div class="hstats">
+    <div><b>579K</b> contratos</div>
+    <div><b>43K</b> empresas</div>
+    <div><b>167K</b> funcionarios</div>
+    <div><b>268K</b> nóminas</div>
   </div>
 </header>
 
 <nav id="tabs">
-  <button class="active" onclick="showTab('contratos')">Contratos</button>
-  <button onclick="showTab('empresas')">Empresas</button>
-  <button onclick="showTab('funcionarios')">Funcionarios</button>
-  <button onclick="showTab('nominas')">Nóminas</button>
-  <button onclick="showTab('persona')">Buscar Persona</button>
-  <button onclick="showTab('anomalias')">Anomalías</button>
+  <button class="on" data-t="contratos">Contratos</button>
+  <button data-t="empresas">Empresas</button>
+  <button data-t="funcionarios">Funcionarios</button>
+  <button data-t="nominas">Nóminas</button>
+  <button data-t="persona">Buscar Persona</button>
+  <button data-t="anomalias">Anomalías</button>
 </nav>
 
 <main>
 
-  <!-- TAB: CONTRATOS -->
-  <div id="tab-contratos" class="tab-content active">
-    <div class="search-box">
-      <input id="q-contratos" placeholder="Buscar contratos (empresa, objeto, entidad)..." onkeydown="if(event.key==='Enter')buscarContratos()">
-      <button onclick="buscarContratos()">Buscar</button>
-    </div>
-    <div id="r-contratos" class="empty">Ingresa un término para buscar entre 579,001 contratos del DGCP.</div>
+<!-- CONTRATOS -->
+<div id="t-contratos" class="tab on">
+  <div class="sbox">
+    <input id="q-con" placeholder="Buscar contratos (empresa, objeto, entidad)..." onkeydown="if(event.key==='Enter')bCon()">
+    <button onclick="bCon()">Buscar</button>
   </div>
+  <div id="r-con"><div class="loading">Cargando contratos de mayor monto...</div></div>
+</div>
 
-  <!-- TAB: EMPRESAS -->
-  <div id="tab-empresas" class="tab-content">
-    <div class="search-box">
-      <input id="q-empresas" placeholder="Buscar empresas (nombre, RNC, representante)..." onkeydown="if(event.key==='Enter')buscarEmpresas()">
-      <button onclick="buscarEmpresas()">Buscar</button>
-    </div>
-    <div id="r-empresas" class="empty">Busca entre 43,219 empresas registradas con el Estado.</div>
+<!-- EMPRESAS -->
+<div id="t-empresas" class="tab">
+  <div class="sbox">
+    <input id="q-emp" placeholder="Buscar empresas (nombre, RNC, representante)..." onkeydown="if(event.key==='Enter')bEmp()">
+    <button onclick="bEmp()">Buscar</button>
   </div>
+  <div id="r-emp"><div class="loading">Cargando empresas top...</div></div>
+</div>
 
-  <!-- TAB: FUNCIONARIOS -->
-  <div id="tab-funcionarios" class="tab-content">
-    <div class="search-box">
-      <input id="q-funcionarios" placeholder="Buscar funcionarios (nombre, cargo, institución)..." onkeydown="if(event.key==='Enter')buscarFuncionarios()">
-      <button onclick="buscarFuncionarios()">Buscar</button>
-    </div>
-    <div id="r-funcionarios" class="empty">Busca entre 167,085+ funcionarios públicos de RD.</div>
+<!-- FUNCIONARIOS -->
+<div id="t-funcionarios" class="tab">
+  <div class="sbox">
+    <input id="q-fun" placeholder="Buscar funcionarios (nombre, cargo, institución)..." onkeydown="if(event.key==='Enter')bFun()">
+    <button onclick="bFun()">Buscar</button>
   </div>
+  <div id="r-fun"><div class="loading">Cargando funcionarios top...</div></div>
+</div>
 
-  <!-- TAB: NÓMINAS -->
-  <div id="tab-nominas" class="tab-content">
-    <div id="nominas-stats" class="stats-grid"><div class="loading">Cargando estadísticas...</div></div>
-    <div class="search-box">
-      <input id="q-nominas" placeholder="Buscar empleado en nóminas (nombre)..." onkeydown="if(event.key==='Enter')buscarNominas()">
-      <button onclick="buscarNominas()">Buscar</button>
-    </div>
-    <div class="filter-row">
-      <select id="f-institucion" onchange="buscarNominas()">
-        <option value="">Todas las instituciones</option>
-        <option value="BCRD">Banco Central</option>
-        <option value="MOPC">MOPC</option>
-        <option value="DGA">DGA Aduanas</option>
-        <option value="PODER_JUDICIAL">Poder Judicial</option>
-      </select>
-    </div>
-    <div id="r-nominas" class="empty">Busca entre 268,771 registros de nómina de 4 instituciones (BCRD, MOPC, DGA, Poder Judicial).</div>
+<!-- NÓMINAS -->
+<div id="t-nominas" class="tab">
+  <div id="nom-stats" class="sgrid"></div>
+  <div class="sbox">
+    <input id="q-nom" placeholder="Buscar empleado en nóminas (nombre)..." onkeydown="if(event.key==='Enter')bNom()">
+    <button onclick="bNom()">Buscar</button>
   </div>
+  <div class="filters">
+    <select id="f-inst" onchange="bNom()">
+      <option value="">Todas las instituciones</option>
+      <option value="BCRD">Banco Central</option>
+      <option value="MOPC">MOPC</option>
+      <option value="DGA">DGA Aduanas</option>
+      <option value="PODER_JUDICIAL">Poder Judicial</option>
+    </select>
+  </div>
+  <div id="r-nom"><div class="loading">Cargando top salarios...</div></div>
+</div>
 
-  <!-- TAB: BUSCAR PERSONA -->
-  <div id="tab-persona" class="tab-content">
-    <div class="search-box">
-      <input id="q-persona" placeholder="Nombre completo (busca en contratos, funcionarios y nóminas)..." onkeydown="if(event.key==='Enter')buscarPersona()">
-      <button onclick="buscarPersona()">Buscar en todo</button>
-    </div>
-    <div id="r-persona" class="empty">Búsqueda unificada: cruza contratos, empresas, funcionarios y nóminas.</div>
+<!-- BUSCAR PERSONA -->
+<div id="t-persona" class="tab">
+  <div class="sbox">
+    <input id="q-per" placeholder="Nombre completo (busca en contratos, funcionarios y nóminas)..." onkeydown="if(event.key==='Enter')bPer()">
+    <button onclick="bPer()">Buscar en todo</button>
   </div>
+  <div id="r-per" class="empty">Búsqueda unificada: cruza contratos, empresas, funcionarios y nóminas.</div>
+</div>
 
-  <!-- TAB: ANOMALÍAS -->
-  <div id="tab-anomalias" class="tab-content">
-    <div class="search-box">
-      <input id="q-anomalias" placeholder="Buscar anomalías (empresa, monto, tipo)..." onkeydown="if(event.key==='Enter')buscarAnomalias()">
-      <button onclick="buscarAnomalias()">Detectar</button>
-    </div>
-    <div id="r-anomalias" class="empty">Detección de patrones inusuales en contrataciones públicas.</div>
+<!-- ANOMALÍAS -->
+<div id="t-anomalias" class="tab">
+  <div class="sbox">
+    <input id="q-ano" placeholder="Buscar anomalías (empresa, monto, tipo)..." onkeydown="if(event.key==='Enter')bAno()">
+    <button onclick="bAno()">Detectar</button>
   </div>
+  <div id="r-ano"><div class="loading">Cargando contratos sospechosos...</div></div>
+</div>
 
 </main>
 
 <footer>
-  <p>ArchivoRD v6.0 — Un producto de <a href="https://shcustomsoftware.info" target="_blank">SH Custom Software</a></p>
-  <p style="margin-top:.3rem">Datos fuente: DGCP, datos.gob.do, MOPC, DGA, Banco Central | <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a></p>
+  ArchivoRD v6.0 — Un producto de <a href="https://shcustomsoftware.info" target="_blank">SH Custom Software</a><br>
+  Datos: DGCP, datos.gob.do, MOPC, DGA, Banco Central · <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a>
 </footer>
 
 <script>
-// ============================================================
-// SUPABASE CLIENTS
-// ============================================================
-const sb = supabase.createClient(
-  'https://dovguconmpevxekjsyus.supabase.co',
-  'sb_publishable_b4g-gR0MbV2beUjHuaz4tg_66kQPQj5'
-);
-const sb2 = supabase.createClient(
-  'https://ecxvgzogwhsrislmfihh.supabase.co',
-  'sb_publishable_HjtzsafvsgRJ36c2DU-mPA_Tu5fZx1V'
-);
+const sb=supabase.createClient('https://dovguconmpevxekjsyus.supabase.co','sb_publishable_b4g-gR0MbV2beUjHuaz4tg_66kQPQj5');
+const sb2=supabase.createClient('https://ecxvgzogwhsrislmfihh.supabase.co','sb_publishable_HjtzsafvsgRJ36c2DU-mPA_Tu5fZx1V');
 
-// ============================================================
-// TAB NAVIGATION
-// ============================================================
-function showTab(id) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  const btns = document.querySelectorAll('nav button');
-  const tabs = ['contratos','empresas','funcionarios','nominas','persona','anomalias'];
-  const idx = tabs.indexOf(id);
-  if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
-  // Load nominas stats on first visit
-  if (id === 'nominas' && !window._nominasStatsLoaded) {
-    cargarStatsNominas();
-    window._nominasStatsLoaded = true;
+const $=id=>document.getElementById(id);
+const v=id=>$(id).value.trim();
+const h=(id,s)=>$(id).innerHTML=s;
+const e=s=>s?String(s).replace(/</g,'&lt;'):'';
+const fm=n=>n==null||isNaN(n)?'—':'RD$'+Number(n).toLocaleString('en',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+// TABS
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  $('t-'+b.dataset.t).classList.add('on');
+  autoLoad(b.dataset.t);
+});
+
+const loaded={};
+function autoLoad(t){
+  if(loaded[t])return;loaded[t]=1;
+  if(t==='contratos')loadCon();
+  if(t==='empresas')loadEmp();
+  if(t==='funcionarios')loadFun();
+  if(t==='nominas'){loadNomStats();loadNomTop();}
+  if(t==='anomalias')bAno();
+}
+
+// ── CONTRATOS ──
+function conCard(c){
+  return`<div class="card c-contrato"><div class="ch"><div class="cn">${e(c.nombre_proveedor||c.supplier_name||'—')}</div><span class="badge b-contrato">Contrato</span></div><div class="cd">Objeto: <span>${e(c.descripcion||c.tender_title||'—')}</span><br>Entidad: <span>${e(c.entidad||c.buyer_name||'—')}</span><br>Monto: <span class="money money-g">${fm(c.monto||c.amount)}</span>${c.url_doc?' · <a href="'+e(c.url_doc)+'" target="_blank">Doc</a>':''}</div></div>`;
+}
+async function loadCon(){
+  h('r-con','<div class="loading">Cargando top contratos...</div>');
+  const{data}=await sb.from('contratos').select('*').order('monto',{ascending:false}).limit(25);
+  if(!data||!data.length){h('r-con','<div class="empty">Sin datos.</div>');return;}
+  h('r-con','<div class="info">Top 25 contratos por monto</div>'+data.map(conCard).join(''));
+}
+async function bCon(){
+  const q=v('q-con');if(!q)return loadCon();
+  h('r-con','<div class="loading">Buscando...</div>');
+  const{data,error}=await sb.rpc('buscar_contratos',{termino:q});
+  if(error||!data||!data.length){h('r-con','<div class="empty">Sin resultados para "'+e(q)+'"</div>');return;}
+  h('r-con',`<div class="info">${data.length} resultados</div>`+data.map(conCard).join(''));
+}
+
+// ── EMPRESAS ──
+function empCard(x){
+  return`<div class="card c-empresa"><div class="ch"><div class="cn">${e(x.nombre)}</div><span class="badge b-empresa">Empresa</span></div><div class="cd">RNC: <span>${e(x.rnc||'—')}</span><br>Representante: <span>${e(x.representante_legal||'—')}</span><br>Contratos: <span>${x.total_contratos||'—'}</span> · Total: <span class="money money-g">${fm(x.monto_total)}</span></div></div>`;
+}
+async function loadEmp(){
+  h('r-emp','<div class="loading">Cargando top empresas...</div>');
+  const{data}=await sb.from('empresas').select('*').order('monto_total',{ascending:false}).limit(25);
+  if(!data||!data.length){h('r-emp','<div class="empty">Sin datos.</div>');return;}
+  h('r-emp','<div class="info">Top 25 empresas por monto total</div>'+data.map(empCard).join(''));
+}
+async function bEmp(){
+  const q=v('q-emp');if(!q)return loadEmp();
+  h('r-emp','<div class="loading">Buscando...</div>');
+  const{data}=await sb.from('empresas').select('*').or(`nombre.ilike.%${q}%,rnc.ilike.%${q}%,representante_legal.ilike.%${q}%`).limit(100);
+  if(!data||!data.length){h('r-emp','<div class="empty">Sin resultados para "'+e(q)+'"</div>');return;}
+  h('r-emp',`<div class="info">${data.length} resultados</div>`+data.map(empCard).join(''));
+}
+
+// ── FUNCIONARIOS ──
+function funCard(f){
+  return`<div class="card c-func"><div class="ch"><div class="cn">${e(f.nombre)}</div><span class="badge b-func">Funcionario</span></div><div class="cd">Cargo: <span>${e(f.cargo||'—')}</span><br>Institución: <span>${e(f.institucion||'—')}</span>${f.sueldo_bruto?'<br>Sueldo: <span class="money money-g">'+fm(f.sueldo_bruto)+'</span>':''}</div></div>`;
+}
+async function loadFun(){
+  h('r-fun','<div class="loading">Cargando funcionarios top...</div>');
+  const{data}=await sb2.from('funcionarios').select('*').order('sueldo_bruto',{ascending:false,nullsFirst:false}).limit(25);
+  if(!data||!data.length){h('r-fun','<div class="empty">Sin datos.</div>');return;}
+  h('r-fun','<div class="info">Top 25 funcionarios por salario bruto</div>'+data.map(funCard).join(''));
+}
+async function bFun(){
+  const q=v('q-fun');if(!q)return loadFun();
+  h('r-fun','<div class="loading">Buscando...</div>');
+  const{data,error}=await sb2.rpc('buscar_funcionarios',{termino:q});
+  if(error||!data||!data.length){h('r-fun','<div class="empty">Sin resultados para "'+e(q)+'"</div>');return;}
+  h('r-fun',`<div class="info">${data.length} resultados</div>`+data.map(funCard).join(''));
+}
+
+// ── NÓMINAS ──
+async function loadNomStats(){
+  try{
+    const{data}=await sb2.rpc('stats_nominas');
+    if(!data||!data.length){h('nom-stats','');return;}
+    let tot=0;data.forEach(d=>tot+=Number(d.total_empleados||0));
+    h('nom-stats',data.map(d=>`<div class="scard"><h3>${e(d.institucion)}</h3><div class="bn">${Number(d.total_empleados).toLocaleString()}</div><div class="sd">Promedio: <span class="money money-g">${fm(d.sueldo_promedio)}</span><br>Máximo: <span class="money money-r">${fm(d.sueldo_max)}</span><br>Nómina: <span class="money">${fm(d.total_bruto)}</span></div></div>`).join('')+`<div class="scard" style="border-top-color:var(--green)"><h3>TOTAL</h3><div class="bn">${tot.toLocaleString()}</div><div class="sd">registros de nómina<br>4 instituciones</div></div>`);
+  }catch(x){h('nom-stats','');}
+}
+function nomCard(n){
+  return`<div class="card c-nomina"><div class="ch"><div class="cn">${e(n.nombre_completo)}</div><span class="badge b-nomina">${e(n.institucion)}</span></div><div class="cd">Cargo: <span>${e(n.cargo||'—')}</span> · Depto: <span>${e(n.departamento||'—')}</span><br>Tipo: <span>${e(n.tipo_empleado||'—')}</span>${n.genero?' · Género: <span>'+e(n.genero)+'</span>':''}${n.anios_servicio?' · Años: <span>'+n.anios_servicio+'</span>':''}<br>Bruto: <span class="money money-g">${fm(n.sueldo_bruto)}</span> · AFP: <span class="money money-r">${fm(n.descuento_afp)}</span> · ISR: <span class="money money-r">${fm(n.descuento_isr)}</span> · SFS: <span class="money money-r">${fm(n.descuento_sfs)}</span><br>Neto: <span class="money money-g">${fm(n.sueldo_neto)}</span>${n.mes&&n.anio?' · Período: <span>'+n.mes+'/'+n.anio+'</span>':''}</div></div>`;
+}
+async function loadNomTop(){
+  h('r-nom','<div class="loading">Cargando top salarios...</div>');
+  const{data}=await sb2.from('nominas').select('*').order('sueldo_bruto',{ascending:false}).limit(25);
+  if(!data||!data.length){h('r-nom','<div class="empty">Sin datos.</div>');return;}
+  h('r-nom','<div class="info">Top 25 salarios brutos en nómina</div>'+data.map(nomCard).join(''));
+}
+async function bNom(){
+  const q=v('q-nom');if(!q)return loadNomTop();
+  const inst=$('f-inst').value;
+  h('r-nom','<div class="loading">Buscando...</div>');
+  let data,error;
+  if(inst){
+    const pat='%'+q.toLowerCase().split(/\s+/).join('%')+'%';
+    ({data,error}=await sb2.from('nominas').select('*').eq('institucion',inst).ilike('nombre_completo',pat).order('sueldo_bruto',{ascending:false}).limit(100));
+  }else{
+    ({data,error}=await sb2.rpc('buscar_nominas',{termino:q}));
   }
+  if(error||!data||!data.length){h('r-nom','<div class="empty">Sin resultados para "'+e(q)+'"</div>');return;}
+  h('r-nom',`<div class="info">${data.length} resultados</div>`+data.map(nomCard).join(''));
 }
 
-// ============================================================
-// UTILITIES
-// ============================================================
-const fmt = n => n == null ? '—' : 'RD$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
-const esc = s => s ? String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
-const setHTML = (id, html) => document.getElementById(id).innerHTML = html;
-const getVal = id => document.getElementById(id).value.trim();
-
-// ============================================================
-// CONTRATOS
-// ============================================================
-async function buscarContratos() {
-  const q = getVal('q-contratos');
-  if (!q) return;
-  setHTML('r-contratos', '<div class="loading">Buscando contratos...</div>');
-  const { data, error } = await sb.rpc('buscar_contratos', { termino: q });
-  if (error) { setHTML('r-contratos', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
-  if (!data || !data.length) { setHTML('r-contratos', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
-  setHTML('r-contratos',
-    `<div class="results-info">${data.length} resultados</div>` +
-    data.map(c => `<div class="card">
-      <div class="card-header">
-        <div class="card-name">${esc(c.nombre_proveedor || c.supplier_name || 'Sin nombre')}</div>
-        <span class="card-badge badge-contrato">Contrato</span>
-      </div>
-      <div class="card-detail">
-        Objeto: <span>${esc(c.descripcion || c.tender_title || '—')}</span><br>
-        Entidad: <span>${esc(c.entidad || c.buyer_name || '—')}</span><br>
-        Monto: <span class="card-money">${fmt(c.monto || c.amount)}</span>
-        ${c.url_doc ? ' · <a href="'+esc(c.url_doc)+'" target="_blank">Ver documento</a>' : ''}
-      </div>
-    </div>`).join('')
-  );
+// ── BUSCAR PERSONA ──
+async function bPer(){
+  const q=v('q-per');if(!q)return;
+  h('r-per','<div class="loading">Buscando en todas las fuentes...</div>');
+  const R=[];
+  try{const{data}=await sb.rpc('buscar_contratos',{termino:q});(data||[]).forEach(c=>R.push({n:c.nombre_proveedor||c.supplier_name||'—',d:`Entidad: ${c.entidad||c.buyer_name||'—'} · ${fm(c.monto||c.amount)}`,cls:'c-contrato',b:'b-contrato',t:'Contrato'}));}catch(x){}
+  try{const{data}=await sb.from('empresas').select('*').ilike('representante_legal',`%${q}%`).limit(20);(data||[]).forEach(x=>R.push({n:x.representante_legal||'—',d:`Empresa: ${x.nombre} · RNC: ${x.rnc||'—'} · ${fm(x.monto_total)}`,cls:'c-empresa',b:'b-empresa',t:'Empresa'}));}catch(x){}
+  try{const{data}=await sb2.rpc('buscar_funcionarios',{termino:q});(data||[]).forEach(f=>R.push({n:f.nombre,d:`${f.cargo||'—'} · ${f.institucion||'—'}`,cls:'c-func',b:'b-func',t:'Funcionario'}));}catch(x){}
+  try{const{data}=await sb2.rpc('buscar_nominas',{termino:q});(data||[]).forEach(n=>R.push({n:n.nombre_completo,d:`${n.cargo||'—'} · ${n.institucion} · Bruto: ${fm(n.sueldo_bruto)} · Neto: ${fm(n.sueldo_neto)}`,cls:'c-nomina',b:'b-nomina',t:'Nómina'}));}catch(x){}
+  if(!R.length){h('r-per','<div class="empty">Sin resultados para "'+e(q)+'"</div>');return;}
+  const src=new Set(R.map(r=>r.t));
+  h('r-per',`<div class="info">${R.length} resultados en ${src.size} fuentes</div>`+R.map(r=>`<div class="card ${r.cls}"><div class="ch"><div class="cn">${e(r.n)}</div><span class="badge ${r.b}">${r.t}</span></div><div class="cd">${e(r.d)}</div></div>`).join(''));
 }
 
-// ============================================================
-// EMPRESAS
-// ============================================================
-async function buscarEmpresas() {
-  const q = getVal('q-empresas');
-  if (!q) return;
-  setHTML('r-empresas', '<div class="loading">Buscando empresas...</div>');
-  const { data, error } = await sb.from('empresas')
-    .select('*')
-    .or(`nombre.ilike.%${q}%,rnc.ilike.%${q}%,representante_legal.ilike.%${q}%`)
-    .limit(100);
-  if (error) { setHTML('r-empresas', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
-  if (!data || !data.length) { setHTML('r-empresas', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
-  setHTML('r-empresas',
-    `<div class="results-info">${data.length} resultados</div>` +
-    data.map(e => `<div class="card">
-      <div class="card-header">
-        <div class="card-name">${esc(e.nombre)}</div>
-        <span class="card-badge badge-empresa">Empresa</span>
-      </div>
-      <div class="card-detail">
-        RNC: <span>${esc(e.rnc || '—')}</span><br>
-        Representante: <span>${esc(e.representante_legal || '—')}</span><br>
-        Contratos: <span>${e.total_contratos || '—'}</span> · Total: <span class="card-money">${fmt(e.monto_total)}</span>
-      </div>
-    </div>`).join('')
-  );
+// ── ANOMALÍAS ──
+async function bAno(){
+  const q=v('q-ano');
+  h('r-ano','<div class="loading">Analizando patrones...</div>');
+  const{data}=await sb.from('contratos').select('*').order('monto',{ascending:false}).limit(50);
+  if(!data||!data.length){h('r-ano','<div class="empty">Sin datos.</div>');return;}
+  const f=q?data.filter(c=>JSON.stringify(c).toLowerCase().includes(q.toLowerCase())):data;
+  h('r-ano',`<div class="info">${f.length} contratos de mayor monto</div>`+f.map(c=>`<div class="card c-anomalia"><div class="ch"><div class="cn">${e(c.nombre_proveedor||c.supplier_name||'—')}</div><span class="badge b-anomalia">${fm(c.monto||c.amount)}</span></div><div class="cd">${e(c.descripcion||c.tender_title||'—')}<br>Entidad: <span>${e(c.entidad||c.buyer_name||'—')}</span></div></div>`).join(''));
 }
 
-// ============================================================
-// FUNCIONARIOS
-// ============================================================
-async function buscarFuncionarios() {
-  const q = getVal('q-funcionarios');
-  if (!q) return;
-  setHTML('r-funcionarios', '<div class="loading">Buscando funcionarios...</div>');
-  const { data, error } = await sb2.rpc('buscar_funcionarios', { termino: q });
-  if (error) { setHTML('r-funcionarios', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
-  if (!data || !data.length) { setHTML('r-funcionarios', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
-  setHTML('r-funcionarios',
-    `<div class="results-info">${data.length} resultados</div>` +
-    data.map(f => `<div class="card">
-      <div class="card-header">
-        <div class="card-name">${esc(f.nombre)}</div>
-        <span class="card-badge badge-funcionario">Funcionario</span>
-      </div>
-      <div class="card-detail">
-        Cargo: <span>${esc(f.cargo || '—')}</span><br>
-        Institución: <span>${esc(f.institucion || '—')}</span><br>
-        ${f.sueldo_bruto ? 'Sueldo: <span class="card-money">' + fmt(f.sueldo_bruto) + '</span>' : ''}
-      </div>
-    </div>`).join('')
-  );
-}
-
-// ============================================================
-// NÓMINAS
-// ============================================================
-async function cargarStatsNominas() {
-  try {
-    const { data, error } = await sb2.rpc('stats_nominas');
-    if (error || !data || !data.length) {
-      // Fallback: query directly
-      const { data: countData } = await sb2.from('nominas').select('institucion', { count: 'exact', head: true });
-      setHTML('nominas-stats', '<div class="empty">268,771 registros de nómina disponibles.</div>');
-      return;
-    }
-    let total = 0;
-    data.forEach(d => total += Number(d.total_empleados || 0));
-    setHTML('nominas-stats', data.map(d => `<div class="stat-card">
-      <h3>${esc(d.institucion)}</h3>
-      <div class="big-num">${Number(d.total_empleados).toLocaleString()}</div>
-      <div class="details">
-        Promedio: <span class="card-money">${fmt(d.sueldo_promedio)}</span><br>
-        Máximo: <span class="card-money">${fmt(d.sueldo_max)}</span><br>
-        Nómina total: <span class="card-money">${fmt(d.total_bruto)}</span>
-      </div>
-    </div>`).join('') + `<div class="stat-card">
-      <h3>TOTAL</h3>
-      <div class="big-num">${total.toLocaleString()}</div>
-      <div class="details">registros de nómina<br>4 instituciones</div>
-    </div>`);
-  } catch(e) {
-    setHTML('nominas-stats', '');
-  }
-}
-
-async function buscarNominas() {
-  const q = getVal('q-nominas');
-  if (!q) return;
-  const inst = document.getElementById('f-institucion').value;
-  setHTML('r-nominas', '<div class="loading">Buscando en nóminas...</div>');
-
-  let data, error;
-  if (inst) {
-    // Filter by institution using direct query
-    const patron = '%' + q.toLowerCase().split(/\s+/).join('%') + '%';
-    ({ data, error } = await sb2.from('nominas')
-      .select('*')
-      .eq('institucion', inst)
-      .ilike('nombre_completo', patron)
-      .order('sueldo_bruto', { ascending: false })
-      .limit(100));
-  } else {
-    ({ data, error } = await sb2.rpc('buscar_nominas', { termino: q }));
-  }
-
-  if (error) { setHTML('r-nominas', '<div class="empty">Error: ' + esc(error.message) + '</div>'); return; }
-  if (!data || !data.length) { setHTML('r-nominas', '<div class="empty">Sin resultados para "' + esc(q) + '"</div>'); return; }
-
-  setHTML('r-nominas',
-    `<div class="results-info">${data.length} resultados</div>` +
-    data.map(n => `<div class="card">
-      <div class="card-header">
-        <div class="card-name">${esc(n.nombre_completo)}</div>
-        <span class="card-badge badge-nomina">${esc(n.institucion)}</span>
-      </div>
-      <div class="card-detail">
-        Cargo: <span>${esc(n.cargo || '—')}</span><br>
-        Departamento: <span>${esc(n.departamento || '—')}</span><br>
-        Tipo: <span>${esc(n.tipo_empleado || '—')}</span>
-        ${n.genero ? ' · Género: <span>' + esc(n.genero) + '</span>' : ''}
-        ${n.anios_servicio ? ' · Años: <span>' + n.anios_servicio + '</span>' : ''}<br>
-        Bruto: <span class="card-money">${fmt(n.sueldo_bruto)}</span> ·
-        AFP: <span>${fmt(n.descuento_afp)}</span> ·
-        ISR: <span>${fmt(n.descuento_isr)}</span> ·
-        SFS: <span>${fmt(n.descuento_sfs)}</span><br>
-        Neto: <span class="card-money">${fmt(n.sueldo_neto)}</span>
-        ${n.mes && n.anio ? ' · Período: <span>' + n.mes + '/' + n.anio + '</span>' : ''}
-      </div>
-    </div>`).join('')
-  );
-}
-
-// ============================================================
-// BUSCAR PERSONA (UNIFICADO)
-// ============================================================
-async function buscarPersona() {
-  const q = getVal('q-persona');
-  if (!q) return;
-  setHTML('r-persona', '<div class="loading">Buscando en todas las fuentes...</div>');
-
-  const results = [];
-
-  // 1. Contratos (sb)
-  try {
-    const { data } = await sb.rpc('buscar_contratos', { termino: q });
-    (data || []).forEach(c => results.push({
-      nombre: c.nombre_proveedor || c.supplier_name || '—',
-      detalle: `Entidad: ${c.entidad || c.buyer_name || '—'} · Monto: ${fmt(c.monto || c.amount)}`,
-      tipo: 'contrato', badge: 'badge-contrato'
-    }));
-  } catch(e) {}
-
-  // 2. Empresas (sb)
-  try {
-    const { data } = await sb.from('empresas')
-      .select('*')
-      .ilike('representante_legal', `%${q}%`)
-      .limit(20);
-    (data || []).forEach(e => results.push({
-      nombre: e.representante_legal || '—',
-      detalle: `Empresa: ${e.nombre} · RNC: ${e.rnc || '—'} · ${fmt(e.monto_total)}`,
-      tipo: 'empresa', badge: 'badge-empresa'
-    }));
-  } catch(e) {}
-
-  // 3. Funcionarios (sb2)
-  try {
-    const { data } = await sb2.rpc('buscar_funcionarios', { termino: q });
-    (data || []).forEach(f => results.push({
-      nombre: f.nombre,
-      detalle: `${f.cargo || '—'} · ${f.institucion || '—'}`,
-      tipo: 'funcionario', badge: 'badge-funcionario'
-    }));
-  } catch(e) {}
-
-  // 4. Nóminas (sb2)
-  try {
-    const { data } = await sb2.rpc('buscar_nominas', { termino: q });
-    (data || []).forEach(n => results.push({
-      nombre: n.nombre_completo,
-      detalle: `${n.cargo || '—'} · ${n.institucion} · Bruto: ${fmt(n.sueldo_bruto)} · Neto: ${fmt(n.sueldo_neto)}`,
-      tipo: 'nómina', badge: 'badge-nomina'
-    }));
-  } catch(e) {}
-
-  if (!results.length) {
-    setHTML('r-persona', '<div class="empty">Sin resultados para "' + esc(q) + '" en ninguna fuente.</div>');
-    return;
-  }
-
-  setHTML('r-persona',
-    `<div class="results-info">${results.length} resultados en ${new Set(results.map(r=>r.tipo)).size} fuentes</div>` +
-    results.map(r => `<div class="card">
-      <div class="card-header">
-        <div class="card-name">${esc(r.nombre)}</div>
-        <span class="card-badge ${r.badge}">${esc(r.tipo)}</span>
-      </div>
-      <div class="card-detail">${esc(r.detalle)}</div>
-    </div>`).join('')
-  );
-}
-
-// ============================================================
-// ANOMALÍAS
-// ============================================================
-async function buscarAnomalias() {
-  const q = getVal('q-anomalias');
-  setHTML('r-anomalias', '<div class="loading">Analizando patrones...</div>');
-  try {
-    // Buscar contratos de montos altos o patrones sospechosos
-    const { data } = await sb.from('contratos')
-      .select('*')
-      .order('monto', { ascending: false })
-      .limit(50);
-    if (!data || !data.length) {
-      setHTML('r-anomalias', '<div class="empty">No se encontraron anomalías.</div>');
-      return;
-    }
-    const filtered = q ? data.filter(c =>
-      JSON.stringify(c).toLowerCase().includes(q.toLowerCase())
-    ) : data;
-
-    setHTML('r-anomalias',
-      `<div class="results-info">${filtered.length} contratos de mayor monto</div>` +
-      filtered.map(c => `<div class="card">
-        <div class="card-header">
-          <div class="card-name">${esc(c.nombre_proveedor || c.supplier_name || '—')}</div>
-          <span class="card-badge badge-anomalia">${fmt(c.monto || c.amount)}</span>
-        </div>
-        <div class="card-detail">
-          ${esc(c.descripcion || c.tender_title || '—')}<br>
-          Entidad: <span>${esc(c.entidad || c.buyer_name || '—')}</span>
-        </div>
-      </div>`).join('')
-    );
-  } catch(e) {
-    setHTML('r-anomalias', '<div class="empty">Error cargando anomalías.</div>');
-  }
-}
+// AUTO-LOAD first tab
+autoLoad('contratos');
 </script>
 </body>
 </html>
