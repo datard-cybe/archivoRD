@@ -148,20 +148,19 @@ document.getElementById('rl').innerHTML=d&&d.length?d.map(e=>`<div class="card c
 
 async function rF(){
 document.getElementById('rl').innerHTML='<div class="ld">Buscando funcionarios</div>';
-try{const f=(pg-1)*P,t=f+P-1;let qr=sb2.from('funcionarios').select('*',{count:'exact'});
-if(q&&q.length>=2)qr=qr.or(`nombre.ilike.%${q}%,cargo.ilike.%${q}%,institucion.ilike.%${q}%`);
-const{data:d,error:e,count:c}=await qr.order('salario',{ascending:false}).range(f,t);if(e)throw e;const tt=c||0;
+try{let d,tt;
+if(q&&q.length>=2){const r=await sb2.rpc('buscar_funcionarios',{termino:q});if(r.error)throw r.error;d=r.data||[];tt=d.length;}
+else{const f=(pg-1)*P,t=f+P-1;const r=await sb2.from('funcionarios').select('*',{count:'exact'}).order('salario',{ascending:false}).range(f,t);if(r.error)throw r.error;d=r.data||[];tt=r.count||0;rPg(pg,Math.ceil(tt/P));}
 document.getElementById('sr').textContent=tt>=1000?(tt/1000).toFixed(0)+'K':tt;
-document.getElementById('sf').textContent=tt>=1000?(tt/1000).toFixed(0)+'K':tt||'—';
-document.getElementById('rh').innerHTML=`${tt.toLocaleString()} funcionario(s)${q?` para <em>"${q}"</em>`:'— <em>mayor salario primero</em>'}`;
-rPg(pg,Math.ceil(tt/P));
-document.getElementById('rl').innerHTML=d&&d.length?d.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre||'',q)}</div><span class="badge bf">Funcionario</span></div><div style="font-size:12px;color:var(--muted)">${hl(f.cargo||'—',q)}</div><div class="meta"><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.departamento?`<span>Área: <strong>${f.departamento}</strong></span>`:''}${f.cedula?`<span>Cédula: <strong>${f.cedula}</strong></span>`:''}${f.estatus?`<span>Estatus: <strong>${f.estatus}</strong></span>`:''}${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join(''):'<div class="empty">Sin resultados.</div>';
+document.getElementById('sf').textContent='167K';
+document.getElementById('rh').innerHTML=q?`${tt} funcionario(s) para <em>"${q}"</em>`:`${tt.toLocaleString()} funcionarios — <em>mayor salario primero</em>`;
+document.getElementById('rl').innerHTML=d&&d.length?d.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre||'',q)}</div><span class="badge bf">Funcionario</span></div><div style="font-size:12px;color:var(--muted)">${hl(f.cargo||'—',q)}</div><div class="meta"><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.departamento?`<span>Área: <strong>${f.departamento}</strong></span>`:''}${f.estatus?`<span>Estatus: <strong>${f.estatus}</strong></span>`:''}${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join(''):'<div class="empty">Sin resultados.</div>';
 }catch(e){document.getElementById('rl').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}}
 
 async function rP(){
 if(!q||q.length<2){document.getElementById('rh').innerHTML='Escribe un nombre para buscar en todas las fuentes';document.getElementById('rl').innerHTML='<div class="empty">Ejemplo: "Antonio Chahin" · "Fausto Mata" · "Plaza Lama"</div>';document.getElementById('sr').textContent='—';return;}
 document.getElementById('rl').innerHTML='<div class="ld">Buscando en contratos, empresas y funcionarios</div>';
-try{const[eR,cR,fR]=await Promise.all([sb.from('empresas').select('*').or(`representante.ilike.%${q}%,nombre.ilike.%${q}%`).order('monto_total',{ascending:false}).limit(15),sb.rpc('buscar_contratos',{termino:q}),sb2.from('funcionarios').select('*').ilike('nombre',`%${q}%`).order('salario',{ascending:false}).limit(15)]);
+try{const[eR,cR,fR]=await Promise.all([sb.from('empresas').select('*').or(`representante.ilike.%${q}%,nombre.ilike.%${q}%`).order('monto_total',{ascending:false}).limit(15),sb.rpc('buscar_contratos',{termino:q}),sb2.rpc('buscar_funcionarios',{termino:q})]);
 const emp=eR.data||[],con=cR.data||[],fun=fR.data||[];const tt=emp.length+con.length+fun.length;
 document.getElementById('sr').textContent=tt;document.getElementById('rh').innerHTML=`Búsqueda unificada: <em>"${q}"</em> — ${tt} resultados en todas las fuentes`;let h='';
 if(fun.length){const s=fun.reduce((a,f)=>a+parseFloat(f.salario||0),0);h+=`<div class="sec">🏛 <span>Funcionario público</span> — ${fun.length} registro(s)${s>0?` · Salario: <span style="color:var(--purple)">RD$${s.toLocaleString('es-DO')}/mes</span>`:''}</div>`;h+=fun.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre,q)}</div><span class="badge bf">Funcionario</span></div><div class="meta"><span>Cargo: <strong>${hl(f.cargo||'—',q)}</strong></span><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join('');}
