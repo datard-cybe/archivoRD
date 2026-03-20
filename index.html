@@ -74,7 +74,7 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan
 </head>
 <body>
 <div class="status-bar">
-<div class="live"><span class="dot"></span>EN VIVO — 1.86M registros · 10 instituciones · Actualización continua</div>
+<div class="live"><span class="dot"></span>EN VIVO — 1.86M registros · 11 instituciones · Actualización continua</div>
 <a href="https://archivord.com">archivord.com</a>
 </div>
 <header>
@@ -97,9 +97,9 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan
 <div class="st"><div class="sn">579K</div><div class="sl">Contratos</div></div>
 <div class="st"><div class="sn">43K</div><div class="sl">Empresas</div></div>
 <div class="st"><div class="sn" id="sf">167K</div><div class="sl">Funcionarios</div></div>
-<div class="st"><div class="sn" style="color:var(--red2)">10</div><div class="sl">Anomalías</div></div>
+<div class="st"><div class="sn" style="color:var(--red2)">27</div><div class="sl">Anomalías</div></div>
 <div class="st"><div class="sn" style="color:var(--cyan)">1.08M</div><div class="sl">Nóminas</div></div>
-<div class="st"><div class="sn">10</div><div class="sl">Instituciones</div></div>
+<div class="st"><div class="sn">11</div><div class="sl">Instituciones</div></div>
 <div class="st"><div class="sn" id="sr">—</div><div class="sl">Encontrados</div></div>
 </div>
 <div class="sort-bar">
@@ -118,7 +118,7 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan
   <script type='text/javascript'>kofiwidget2.init('Apoya ArchivoRD', '#72a4f2', 'H2H81WALNM');kofiwidget2.draw();</script>
 </div>
 <footer>
-<span>Fuentes: DGCP · datos.gob.do · MOPC · DGA · BCRD · DGII · MINERD · Poder Judicial · CAASD · Hacienda· MSP · Policía Nacional</span>
+<span>Fuentes: DGCP · datos.gob.do · MOPC · DGA · BCRD · DGII · MINERD · Poder Judicial · CAASD · Hacienda· MSP · Policía Nacional · Medio Ambiente</span>
 <span>ArchivoRD v7.3 · <a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a> · <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a></span>
 </footer>
 <script>
@@ -208,7 +208,26 @@ if(con.length){h+=`<div class="sec">📄 <span>Contratos</span> — ${con.length
 if(!tt)h='<div class="empty">Sin resultados.</div>';$rl(h);
 }catch(e){$rl(`<div class="empty">Error: ${e.message}</div>`);}}
 
-const AN=[{t:"Fraccionamiento",i:"Min. Educación",p:"BAING, SRL",r:"",m:36308000,f:"2025-12",d:"20 contratos dic 2025 bajo límite compra directa, RD$36.3M."},
+const AN=[{t:"Conflicto de Interés",i:"Concejo de Regidores",p:"Rafael Antonio Hernandez Reynoso",r:"Rafael Antonio Hernandez Reynoso",m:746921104,f:"2025",d:"Regidor es representante de empresa con RD$746.9M en contratos con el Estado."},
+{t:"Conflicto de Interés",i:"Dir. Auditoría Interna",p:"Ferrecentro Lissette, SRL",r:"CECILIO DISLA",m:88332464,f:"2025",d:"Asesor de Auditoría Interna es representante de 3 empresas con 162 contratos por RD$110M total."},
+{t:"Conflicto de Interés",i:"Dirección General",p:"Compubusiness, EIRL",r:"PEDRO ANTONIO QUEZADA CEPEDA",m:34153182,f:"2025",d:"Director General es representante de empresa con 13 contratos por RD$34.2M."},
+{t:"Conflicto de Interés",i:"Comunicación Estratégica",p:"Mario Manuel Davalos Perdomo",r:"MARIO MANUEL DAVALOS PERDOMO",m:15000000,f:"2025",d:"Empleado eventual es representante de empresa con RD$15M en contrato."},
+{t:"Conflicto de Interés",i:"Dir. Auditoría Interna",p:"Hebron Medical, SRL",r:"CECILIO DISLA",m:13390690,f:"2025",d:"Mismo asesor de auditoría, segunda empresa: 20 contratos por RD$13.4M."},
+{t:"Conflicto de Interés",i:"Dir. Auditoría Interna",p:"Pelón Comercial, SRL",r:"CECILIO DISLA",m:8303106,f:"2025",d:"Mismo asesor de auditoría, tercera empresa: 26 contratos por RD$8.3M."},
+{t:"Conflicto de Interés",i:"Min. Cultura",p:"González Cáceres Super Mas, SRL",r:"HECTOR GONZALEZ",m:8256208,f:"2025",d:"Sereno del Min. Cultura es representante de empresa con 26 contratos por RD$8.3M."},
+{t:"Conflicto de Interés",i:"Concejo de Regidores",p:"Centro de la Sangre y Especialidades, SRL",r:"LEONIDAS CALDERON RAMBALDE",m:3986500,f:"2025",d:"Regidor es representante de empresa médica con 108 contratos por RD$4M."},
+{t:"Conflicto de Interés",i:"MIVHED",p:"Henry Adalmiro Gonzalez Mosquea",r:"HENRY ADALMIRO GONZALEZ MOSQUEA",m:3730000,f:"2025",d:"Coordinador de Proyectos del MIVHED es representante con 4 contratos por RD$3.7M."},
+{t:"Conflicto de Interés",i:"Despacho del Ministro",p:"Eurosuministros, SRL",r:"ANGEL FRANCISCO ESTEVEZ BOURDIERD",m:3205000,f:"2025",d:"Ministro es representante de empresa con 2 contratos por RD$3.2M."},
+{t:"Conflicto de Interés",i:"MAPRE",p:"LSH Garcia, Estrategias Jurídicos y Comunicación, SRL",r:"LUIS RAFAEL GARCIA",m:2539021,f:"2025",d:"Asesor de Prensa del Poder Ejecutivo es representante de empresa con 24 contratos por RD$2.5M."},
+{t:"Conflicto de Interés",i:"Sub-Sec. Fomento Educ.",p:"Julian Roa",r:"JULIAN ROA",m:1860000,f:"2025",d:"Sub-secretario es representante de empresa con RD$1.86M en contrato."},
+{t:"Conflicto de Interés",i:"Depto. Comunicaciones",p:"Emotionlink, EIRL",r:"LIBIO ALBERTO ENCARNACION MATEO",m:1745000,f:"2025",d:"Encargado de Comunicaciones es representante de empresa con 2 contratos por RD$1.75M."},
+{t:"Conflicto de Interés",i:"Dir. Asuntos Jurídicos",p:"Cerise Cristina Bronte Blemings Lamarche",r:"CERISE CRISTINA BRONTE BLEMINGS LAMARCHE",m:1536000,f:"2025",d:"Directora Legal es representante de empresa con RD$1.5M en contrato."},
+{t:"Conflicto de Interés",i:"Metro Santo Domingo",p:"Rl Supply Plus, SRL",r:"ARIEL ALBERTO RODRIGUEZ DE LA ROSA",m:1522216,f:"2025",d:"Coordinador del Metro es representante de empresa con 4 contratos por RD$1.5M."},
+{t:"Conflicto de Interés",i:"Min. Cultura",p:"Galeria De Arte Guernica, SRL",r:"YAMAL NASSER MICHELEN STEFAN",m:1100000,f:"2025",d:"Viceministro de Cultura es representante de galería con 2 contratos por RD$1.1M."},
+// === VIOLACIÓN LEY 200-04 ===
+{t:"Violación Ley 200-04",i:"Policía Nacional",p:"Policía Nacional (todas las sub-unidades)",r:"",m:70000038,f:"2025-12",d:"Policía Nacional publica nómina SIN NOMBRES de empleados. Solo rangos y sueldos. Viola Ley 200-04 Art.3(d). Sentencia TC-0016-14 solo exime a FFAA, no a PN."},
+// === FRACCIONAMIENTO DE CONTRATOS ===
+{t:"Fraccionamiento",i:"Min. Educación",p:"BAING, SRL",r:"",m:36308000,f:"2025-12",d:"20 contratos dic 2025 bajo límite compra directa, RD$36.3M."},
 {t:"Fraccionamiento",i:"Min. Educación",p:"Martínez Torres Traveling, SRL",r:"",m:33475579,f:"2025-12",d:"20 contratos dic 2025, RD$33.5M."},
 {t:"Fraccionamiento",i:"Min. Educación",p:"Inversiones Carafran, SRL",r:"",m:32240643,f:"2025-12",d:"18 contratos dic 2025, RD$32.2M."},
 {t:"Fraccionamiento",i:"Dir. Proyectos Estratégicos",p:"Wilfredo Díaz Productions",r:"Wilfredo Germán Díaz Ureña",m:32000000,f:"2024",d:"8 contratos audiovisuales en un mes, RD$32M."},
