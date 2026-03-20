@@ -114,17 +114,12 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan
 <div class="results"><div class="rh" id="rh"></div><div id="rl"><div class="ld">Conectando</div></div><div class="pag" id="pag"></div></div>
 <div style="text-align: center; margin: 20px 0; padding: 15px 0; border-top: 1px dashed var(--border); font-size: 13px; color: var(--muted);">
   <p style="margin-bottom: 12px;">¿Te ayudó la búsqueda? Apoya ArchivoRD para seguir actualizando datos públicos gratis.</p>
-  
-  <!-- Botón Ko-fi -->
   <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-  <script type='text/javascript'>
-    kofiwidget2.init('Apoya ArchivoRD', '#72a4f2', 'H2H81WALNM');
-    kofiwidget2.draw();
-  </script>
-</div>  
+  <script type='text/javascript'>kofiwidget2.init('Apoya ArchivoRD', '#72a4f2', 'H2H81WALNM');kofiwidget2.draw();</script>
+</div>
 <footer>
 <span>Fuentes: DGCP · datos.gob.do · MOPC · DGA · BCRD · DGII · MINERD · Poder Judicial</span>
-<span>ArchivoRD v7.0 · <a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a> · <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a></span>
+<span>ArchivoRD v7.1 · <a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a> · <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a></span>
 </footer>
 <script>
 const{createClient}=supabase;
@@ -133,6 +128,7 @@ const sb2=createClient("https://ecxvgzogwhsrislmfihh.supabase.co","sb_publishabl
 const P=20;let tab='contratos',q='',pg=1,srt='default',cache=null;
 
 const fmt=n=>{const v=parseFloat(n||0);return v>=1e9?`RD$${(v/1e9).toFixed(1)}B`:v>=1e6?`RD$${(v/1e6).toFixed(1)}M`:v>0?`RD$${v.toLocaleString('es-DO')}`:'—';};
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const hl=(t,s)=>{if(!s||s.length<2)return t||'';return s.toLowerCase().split(/\s+/).filter(x=>x.length>1).reduce((r,w)=>r.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`),String(t||''));};
 
 function setTab(b,t){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');tab=t;pg=1;srt='default';uSrt();cache=null;go();}
@@ -160,7 +156,6 @@ function dbCol(){
 }
 function dbAsc(){return srt==='money_asc'||srt==='date_asc'||srt==='az';}
 
-// ─── CONTRATOS ───
 async function rC(){
 $rl('<div class="ld">Buscando contratos</div>');
 try{let d,e;
@@ -170,7 +165,6 @@ if(e)throw e;$sr(q?d.length:'579K');$rh(q?`${d.length} resultado(s) para <em>"${
 $rl(d&&d.length?d.map(c=>`<div class="card"><div class="ct"><div class="cn">${hl(c.titulo||'Sin título',q)}</div><span class="badge bc">Contrato</span></div><div style="font-size:12px;color:var(--muted)">Proveedor: <strong style="color:var(--text)">${hl(c.proveedor||'—',q)}</strong></div><div class="meta"><span>Institución: <strong>${hl(c.institucion||'—',q)}</strong></span><span>Fecha: <strong>${c.fecha||'—'}</strong></span><span>Estado: <strong>${c.estado||'—'}</strong></span><span class="mo">${fmt(c.monto)}</span></div>${c.url_doc?`<a class="db" href="${c.url_doc}" target="_blank">📎 Ver documento →</a>`:''}</div>`).join(''):'<div class="empty">Sin resultados.</div>');
 }catch(e){$rl(`<div class="empty">Error: ${e.message}</div>`);}}
 
-// ─── EMPRESAS ───
 async function rE(){
 $rl('<div class="ld">Buscando empresas</div>');
 try{const f=(pg-1)*P;let qr=sb.from('empresas').select('*',{count:'exact'});
@@ -180,7 +174,6 @@ $sr(c>=1000?(c/1000).toFixed(0)+'K':c);$rh(`${(c||0).toLocaleString()} empresas`
 $rl(d&&d.length?d.map(e=>`<div class="card ce"><div class="ct"><div class="cn">${hl(e.nombre||'',q)}</div><span class="badge be">Empresa</span></div><div class="meta"><span>RNC: <strong>${e.rnc||'—'}</strong></span><span>Contratos: <strong>${e.contratos_count||0}</strong></span>${e.representante&&e.representante!='nan'?`<span class="rep">👤 ${hl(e.representante,q)}</span>`:''}<span class="mo">${fmt(e.monto_total)}</span></div></div>`).join(''):'<div class="empty">Sin resultados.</div>');
 }catch(e){$rl(`<div class="empty">Error: ${e.message}</div>`);}}
 
-// ─── FUNCIONARIOS ───
 async function rF(){
 $rl('<div class="ld">Buscando funcionarios</div>');
 try{let d,tt;
@@ -190,7 +183,6 @@ $sr(tt>=1000?(tt/1000).toFixed(0)+'K':tt);$rh(q?`${tt} funcionario(s) para <em>"
 $rl(d.length?d.map(f=>`<div class="card cf"><div class="ct"><div class="cn">${hl(f.nombre||'',q)}</div><span class="badge bf">Funcionario</span></div><div style="font-size:12px;color:var(--muted)">${hl(f.cargo||'—',q)}</div><div class="meta"><span>Institución: <strong>${hl(f.institucion||'—',q)}</strong></span>${f.departamento?`<span>Área: <strong>${f.departamento}</strong></span>`:''}${f.salario>0?`<span class="sa2">RD$${parseFloat(f.salario).toLocaleString('es-DO')}/mes</span>`:''}</div></div>`).join(''):'<div class="empty">Sin resultados.</div>');
 }catch(e){$rl(`<div class="empty">Error: ${e.message}</div>`);}}
 
-// ─── NÓMINAS ───
 async function rN(){
 $rl('<div class="ld">Buscando nóminas</div>');
 try{let d,tt;
@@ -203,7 +195,6 @@ $rl(d.length?d.map(nomC).join(''):'<div class="empty">Sin resultados.</div>');
 function nomC(n){return`<div class="card cn2"><div class="ct"><div class="cn">${hl(n.nombre_completo||'',q)}</div><span class="badge bn">${n.institucion||'Nómina'}</span></div><div style="font-size:12px;color:var(--muted)">${hl(n.cargo||'—',q)} · ${n.departamento||'—'}</div><div class="meta"><span>Tipo: <strong>${n.tipo_empleado||'—'}</strong></span>${n.genero?`<span>Género: <strong>${n.genero}</strong></span>`:''}${n.anios_servicio?`<span>Años: <strong>${n.anios_servicio}</strong></span>`:''}<span>Bruto: <strong class="mo">${fmt(n.sueldo_bruto)}</strong></span><span>AFP: <strong style="color:var(--red2)">${fmt(n.descuento_afp)}</strong></span><span>ISR: <strong style="color:var(--red2)">${fmt(n.descuento_isr)}</strong></span><span>Neto: <strong class="mo">${fmt(n.sueldo_neto)}</strong></span>${n.mes&&n.anio?`<span>${n.mes}/${n.anio}</span>`:''}</div></div>`;}
 function showCards(){if(cache)$rl(cache.map(nomC).join(''));}
 
-// ─── BUSCAR PERSONA ───
 async function rP(){
 if(!q||q.length<2){$rh('Escribe un nombre para buscar en todas las fuentes');$rl('<div class="empty">Ejemplo: "Luis Abinader" · "Felix Bautista" · "Carolina Mejia"</div>');$sr('—');return;}
 $rl('<div class="ld">Buscando en contratos, empresas, funcionarios y nóminas</div>');
@@ -217,7 +208,6 @@ if(con.length){h+=`<div class="sec">📄 <span>Contratos</span> — ${con.length
 if(!tt)h='<div class="empty">Sin resultados.</div>';$rl(h);
 }catch(e){$rl(`<div class="empty">Error: ${e.message}</div>`);}}
 
-// ─── ANOMALÍAS ───
 const AN=[{t:"Fraccionamiento",i:"Min. Educación",p:"BAING, SRL",r:"",m:36308000,f:"2025-12",d:"20 contratos dic 2025 bajo límite compra directa, RD$36.3M."},
 {t:"Fraccionamiento",i:"Min. Educación",p:"Martínez Torres Traveling, SRL",r:"",m:33475579,f:"2025-12",d:"20 contratos dic 2025, RD$33.5M."},
 {t:"Fraccionamiento",i:"Min. Educación",p:"Inversiones Carafran, SRL",r:"",m:32240643,f:"2025-12",d:"18 contratos dic 2025, RD$32.2M."},
@@ -229,13 +219,13 @@ const AN=[{t:"Fraccionamiento",i:"Min. Educación",p:"BAING, SRL",r:"",m:3630800
 {t:"Fraccionamiento",i:"Fuerza Aérea",p:"Torcons, SRL",r:"",m:21115092,f:"2024-06",d:"17 contratos jun 2024, RD$21.1M."},
 {t:"Fraccionamiento",i:"Relaciones Exteriores",p:"Milena Tours, SRL",r:"",m:17787704,f:"2018-10",d:"31 contratos oct 2018, RD$17.8M."}];
 
-function rA(){const l=q.toLowerCase();let d=[...AN];if(q)d=d.filter(a=>(a.t+a.p+a.i+(a.r||'')+a.d).toLowerCase().includes(l));
+function rA(){const l=norm(q.toLowerCase());let d=[...AN];if(q)d=d.filter(a=>norm((a.t+a.p+a.i+(a.r||'')+a.d).toLowerCase()).includes(l));
 if(srt==='money_desc')d.sort((a,b)=>b.m-a.m);else if(srt==='money_asc')d.sort((a,b)=>a.m-b.m);
 else if(srt==='date_desc')d.sort((a,b)=>b.f.localeCompare(a.f));else if(srt==='date_asc')d.sort((a,b)=>a.f.localeCompare(b.f));
-$sr(d.length);$rh(`${d.length} anomalías — <em>algoritmo ArchivoRD</em>`);
-$rl(d.length?d.map(a=>`<div class="card ca"><div class="ct"><div class="cn">${hl(a.t+' — '+a.i,q)}</div><span class="badge ba">⚠ ANOMALÍA</span></div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">${hl(a.d,q)}</div><div class="meta"><span>${hl(a.p,q)}</span>${a.r?`<span class="rep">👤 ${hl(a.r,q)}</span>`:''}<span>${a.f}</span><span class="mo">${fmt(a.m)}</span></div></div>`).join(''):'<div class="empty">Sin resultados.</div>');}
+const total=d.length;const pages=Math.ceil(total/P);const start=(pg-1)*P;const page=d.slice(start,start+P);
+$sr(total);$rh(`${total} anomalías — <em>algoritmo ArchivoRD</em>`);rPg(pg,pages);
+$rl(page.length?page.map(a=>`<div class="card ca"><div class="ct"><div class="cn">${hl(a.t+' — '+a.i,q)}</div><span class="badge ba">⚠ ANOMALÍA</span></div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">${hl(a.d,q)}</div><div class="meta"><span>${hl(a.p,q)}</span>${a.r?`<span class="rep">👤 ${hl(a.r,q)}</span>`:''}<span>${a.f}</span><span class="mo">${fmt(a.m)}</span></div></div>`).join(''):'<div class="empty">Sin resultados.</div>');}
 
-// ─── UTIL ───
 const $rl=h=>document.getElementById('rl').innerHTML=h;
 const $rh=h=>document.getElementById('rh').innerHTML=h;
 const $sr=v=>document.getElementById('sr').textContent=v;
