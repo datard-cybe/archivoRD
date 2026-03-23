@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>ArchivoRD — Motor de Investigación Pública</title>
 <meta name="description" content="Base de datos pública de contratos, empresas, funcionarios y nóminas del Estado dominicano. 1.8M+ registros."/>
+<meta property="og:title" content="ArchivoRD — Motor de Investigación Pública"/>
+<meta property="og:description" content="1.86M registros públicos del Estado dominicano. Contratos, empresas, funcionarios y nóminas."/>
+<meta property="og:url" content="https://archivord.com"/>
+<meta property="og:type" content="website"/>
 <link rel="canonical" href="https://archivord.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -21,6 +25,23 @@ header{padding:24px 28px 18px;border-bottom:1px solid var(--border);display:flex
 .logo{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:var(--white);letter-spacing:-.02em}.logo b{color:var(--red2)}
 .tagline{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.06em;text-transform:uppercase}
 .pw{font-size:10px;color:var(--muted);text-align:right}.pw a{color:var(--cyan);text-decoration:none}.pw a:hover{text-decoration:underline}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.auth-area{display:flex;align-items:center;gap:10px}
+.auth-btn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--white);cursor:pointer;transition:.2s}
+.auth-btn:hover{border-color:var(--blue);background:rgba(59,130,246,.08)}
+.auth-btn svg{width:16px;height:16px}
+.auth-btn.logout{border-color:var(--red);color:var(--red)}.auth-btn.logout:hover{background:rgba(220,53,69,.08)}
+.user-info{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.user-info img{width:22px;height:22px;border-radius:50%;border:1px solid var(--border)}
+.user-info .uname{color:var(--cyan);font-weight:500}
+.user-info .urole{padding:2px 6px;border-radius:3px;font-size:9px;text-transform:uppercase;letter-spacing:.05em}
+.urole.r-free{background:rgba(34,197,94,.15);color:var(--green)}
+.urole.r-pro{background:rgba(168,85,247,.15);color:var(--purple)}
+.urole.r-admin{background:rgba(220,53,69,.15);color:var(--red2)}
+.quota-bar{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:2px}
+.quota-bar .qb{height:4px;width:80px;background:var(--border);border-radius:2px;overflow:hidden}
+.quota-bar .qf{height:100%;background:var(--green);border-radius:2px;transition:width .3s}
+.quota-bar .qf.warn{background:var(--orange)}.quota-bar .qf.danger{background:var(--red)}
 .sa{padding:20px 28px 14px}.sb{position:relative;max-width:900px}
 .si{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 120px 14px 18px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--white);outline:none;transition:.2s}
 .si:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(220,53,69,.12)}.si::placeholder{color:var(--muted)}
@@ -69,7 +90,18 @@ mark{background:rgba(220,53,69,.25);color:#fca5a5;padding:1px 3px;border-radius:
 .pb:hover{border-color:var(--blue);color:var(--blue)}.pb.active{background:var(--blue);color:#fff;border-color:var(--blue)}.pb:disabled{opacity:.3;cursor:default}
 footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;font-size:10px;color:var(--muted);flex-wrap:wrap;gap:6px}
 footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan)}
-@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}.si{padding-right:90px;font-size:13px}.results{padding:12px 16px 30px}header{padding:16px 16px 12px}.sa{padding:14px 16px 10px}.card{padding:12px 14px}.logo{font-size:26px}.sort-bar{padding:8px 16px}}
+/* Rate limit modal */
+.rl-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.rl-overlay.show{display:flex}
+.rl-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;max-width:420px;width:90%;text-align:center}
+.rl-modal h3{font-family:'Space Grotesk',sans-serif;font-size:20px;color:var(--white);margin-bottom:10px}
+.rl-modal p{font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.rl-modal .rl-cta{display:inline-flex;align-items:center;gap:8px;background:var(--blue);border:none;border-radius:8px;padding:10px 24px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;transition:.2s}
+.rl-modal .rl-cta:hover{background:#2563eb}
+.rl-modal .rl-cta svg{width:18px;height:18px}
+.rl-modal .rl-close{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 16px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;margin-top:10px}
+.rl-modal .rl-close:hover{border-color:var(--muted)}
+@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}.si{padding-right:90px;font-size:13px}.results{padding:12px 16px 30px}header{padding:16px 16px 12px}.sa{padding:14px 16px 10px}.card{padding:12px 14px}.logo{font-size:26px}.sort-bar{padding:8px 16px}.auth-area{flex-wrap:wrap}.hdr-right{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -79,7 +111,27 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan
 </div>
 <header>
 <div><div class="logo">Archivo<b>RD</b></div><div class="tagline">Motor de investigación pública · República Dominicana · 2015–2026</div></div>
+<div class="hdr-right">
+<div class="auth-area" id="authArea">
+<button class="auth-btn" id="loginBtn" onclick="loginGoogle()" style="display:none">
+<svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+Entrar con Google
+</button>
+<div id="userBox" style="display:none">
+<div class="user-info">
+<img id="userAvatar" src="" alt=""/>
+<span class="uname" id="userName"></span>
+<span class="urole r-free" id="userRole">FREE</span>
+</div>
+<div class="quota-bar" id="quotaBar">
+<span id="quotaText">—</span>
+<div class="qb"><div class="qf" id="quotaFill" style="width:100%"></div></div>
+</div>
+</div>
+<button class="auth-btn logout" id="logoutBtn" onclick="logoutUser()" style="display:none">Salir</button>
+</div>
 <div class="pw">Un producto de<br><a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a></div>
+</div>
 </header>
 <div class="sa"><div class="sb">
 <input class="si" id="q" placeholder="Busca nombre, empresa, institución, cargo o contrato..." autocomplete="off"/>
@@ -112,21 +164,146 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--cyan
 <button class="sbtn" onclick="sSort('az')">A→Z</button>
 </div>
 <div class="results"><div class="rh" id="rh"></div><div id="rl"><div class="ld">Conectando</div></div><div class="pag" id="pag"></div></div>
-<div style="text-align: center; margin: 20px 0; padding: 15px 0; border-top: 1px dashed var(--border); font-size: 13px; color: var(--muted);">
-  <p style="margin-bottom: 12px;">¿Te ayudó la búsqueda? Apoya ArchivoRD para seguir actualizando datos públicos gratis.</p>
+<div style="text-align:center;margin:20px 0;padding:15px 0;border-top:1px dashed var(--border);font-size:13px;color:var(--muted)">
+  <p style="margin-bottom:12px">¿Te ayudó la búsqueda? Apoya ArchivoRD para seguir actualizando datos públicos gratis.</p>
   <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-  <script type='text/javascript'>kofiwidget2.init('Apoya ArchivoRD', '#72a4f2', 'H2H81WALNM');kofiwidget2.draw();</script>
+  <script type='text/javascript'>kofiwidget2.init('Apoya ArchivoRD','#72a4f2','H2H81WALNM');kofiwidget2.draw();</script>
 </div>
 <footer>
-<span>Fuentes: DGCP · datos.gob.do · MOPC · DGA · BCRD · DGII · MINERD · Poder Judicial · CAASD · Hacienda· MSP · Policía Nacional · Medio Ambiente</span>
-<span>ArchivoRD v7.3 · <a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a> · <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a></span>
+<span>Fuentes: DGCP · datos.gob.do · MOPC · DGA · BCRD · DGII · MINERD · Poder Judicial · CAASD · Hacienda · MSP · Policía Nacional · Medio Ambiente</span>
+<span>ArchivoRD v7.5 · <a href="https://shcustomsoftware.com" target="_blank">SH Custom Software</a> · <a href="https://github.com/datard-cybe/archivoRD" target="_blank">GitHub</a></span>
 </footer>
+
+<!-- Rate limit modal -->
+<div class="rl-overlay" id="rlModal">
+<div class="rl-modal">
+<h3 id="rlTitle">Límite de búsquedas alcanzado</h3>
+<p id="rlMsg">Has usado todas tus búsquedas gratuitas de hoy. Crea una cuenta gratis con Google para obtener 50 búsquedas diarias.</p>
+<button class="rl-cta" id="rlCta" onclick="loginGoogle()">
+<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+Entrar con Google — Gratis
+</button>
+<button class="rl-close" onclick="closeRl()">Cerrar</button>
+</div>
+</div>
+
 <script>
 const{createClient}=supabase;
 const sb=createClient("https://dovguconmpevxekjsyus.supabase.co","sb_publishable_b4g-gR0MbV2beUjHuaz4tg_66kQPQj5");
 const sb2=createClient("https://ecxvgzogwhsrislmfihh.supabase.co","sb_publishable_HjtzsafvsgRJ36c2DU-mPA_Tu5fZx1V");
 const P=20;let tab='contratos',q='',pg=1,srt='default',cache=null;
 
+// ========== AUTH + RATE LIMITING ==========
+let currentUser=null;
+let ipHash=null;
+let quotaInfo={restantes:10,limite:10,rol:'anon'};
+
+async function getIpHash(){
+  if(ipHash)return ipHash;
+  try{const r=await fetch('https://api.ipify.org?format=text');const ip=await r.text();const enc=new TextEncoder().encode(ip);const hash=await crypto.subtle.digest('SHA-256',enc);ipHash=Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16);return ipHash;}
+  catch{return 'unknown';}
+}
+
+async function loginGoogle(){
+  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin}});
+  if(error)console.error('Login error:',error);
+}
+
+async function logoutUser(){
+  await sb.auth.signOut();
+  currentUser=null;
+  quotaInfo={restantes:10,limite:10,rol:'anon'};
+  updateAuthUI();
+}
+
+function updateAuthUI(){
+  const lb=document.getElementById('loginBtn');
+  const ub=document.getElementById('userBox');
+  const lo=document.getElementById('logoutBtn');
+  if(currentUser){
+    lb.style.display='none';
+    ub.style.display='block';
+    lo.style.display='block';
+    const meta=currentUser.user_metadata||{};
+    document.getElementById('userAvatar').src=meta.avatar_url||meta.picture||'';
+    document.getElementById('userName').textContent=meta.full_name||meta.name||currentUser.email.split('@')[0];
+    const roleEl=document.getElementById('userRole');
+    const r=quotaInfo.rol||'free';
+    roleEl.textContent=r.toUpperCase();
+    roleEl.className='urole r-'+r;
+  } else {
+    lb.style.display='flex';
+    ub.style.display='none';
+    lo.style.display='none';
+  }
+  updateQuotaUI();
+}
+
+function updateQuotaUI(){
+  const qt=document.getElementById('quotaText');
+  const qf=document.getElementById('quotaFill');
+  const qbar=document.getElementById('quotaBar');
+  if(!currentUser&&!ipHash){qbar.style.display='none';return;}
+  qbar.style.display='flex';
+  const used=quotaInfo.limite-quotaInfo.restantes;
+  const pct=quotaInfo.limite>0?((quotaInfo.restantes/quotaInfo.limite)*100):0;
+  qt.textContent=`${quotaInfo.restantes}/${quotaInfo.limite} búsquedas`;
+  qf.style.width=pct+'%';
+  qf.className='qf'+(pct<20?' danger':pct<40?' warn':'');
+}
+
+async function checkQuota(termino,tabName){
+  try{
+    const ih=await getIpHash();
+    const{data}=await sb.rpc('registrar_consulta',{
+      p_termino:termino||null,
+      p_tab:tabName,
+      p_resultados:0,
+      p_ip_hash:ih,
+      p_user_agent:navigator.userAgent
+    });
+    if(data){
+      quotaInfo={restantes:data.restantes||0,limite:data.limite||10,rol:data.rol||'anon'};
+      updateQuotaUI();
+      if(!data.permitido){
+        showRateLimit();
+        return false;
+      }
+    }
+    return true;
+  }catch(e){console.log('Quota check error:',e);return true;}
+}
+
+function showRateLimit(){
+  const modal=document.getElementById('rlModal');
+  const title=document.getElementById('rlTitle');
+  const msg=document.getElementById('rlMsg');
+  const cta=document.getElementById('rlCta');
+  if(currentUser){
+    title.textContent='Límite diario alcanzado';
+    msg.textContent='Has usado todas tus búsquedas de hoy. Tu cuota se reinicia mañana a medianoche. ¿Necesitas más? Contacta a ArchivoRD para una cuenta Pro.';
+    cta.style.display='none';
+  } else {
+    title.textContent='Búsquedas agotadas';
+    msg.textContent='Has usado tus 10 búsquedas gratuitas de hoy. Crea una cuenta gratis con Google para obtener 50 búsquedas diarias.';
+    cta.style.display='inline-flex';
+  }
+  modal.classList.add('show');
+}
+
+function closeRl(){document.getElementById('rlModal').classList.remove('show');}
+
+// Init auth
+sb.auth.onAuthStateChange((event,session)=>{
+  currentUser=session?.user||null;
+  updateAuthUI();
+});
+sb.auth.getUser().then(({data:{user}})=>{
+  currentUser=user;
+  updateAuthUI();
+});
+
+// ========== CORE FUNCTIONS ==========
 const fmt=n=>{const v=parseFloat(n||0);return v>=1e9?`RD$${(v/1e9).toFixed(1)}B`:v>=1e6?`RD$${(v/1e6).toFixed(1)}M`:v>0?`RD$${v.toLocaleString('es-DO')}`:'—';};
 const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const hl=(t,s)=>{if(!s||s.length<2)return t||'';return s.toLowerCase().split(/\s+/).filter(x=>x.length>1).reduce((r,w)=>r.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`),String(t||''));};
@@ -145,7 +322,16 @@ function doSort(a){
 }
 function gM(r){return parseFloat(r.monto||r.sueldo_bruto||r.monto_total||r.salario||0);}
 function gD(r){return r.anio?r.anio*100+(r.mes||0):r.fecha?new Date(r.fecha).getTime():0;}
-function go(){document.getElementById('pag').innerHTML='';if(tab==='anomalias')rA();else if(tab==='empresas')rE();else if(tab==='funcionarios')rF();else if(tab==='persona')rP();else if(tab==='nominas')rN();else rC();}
+
+async function go(){
+  document.getElementById('pag').innerHTML='';
+  // Check quota for searches (not for browse/anomalias without query)
+  if(q&&q.length>=2){
+    const allowed=await checkQuota(q,tab);
+    if(!allowed)return;
+  }
+  if(tab==='anomalias')rA();else if(tab==='empresas')rE();else if(tab==='funcionarios')rF();else if(tab==='persona')rP();else if(tab==='nominas')rN();else rC();
+}
 
 function dbCol(){
   if(srt==='money_desc')return['monto','sueldo_bruto','monto_total','salario'][['contratos','nominas','empresas','funcionarios'].indexOf(tab)]||'monto';
@@ -187,8 +373,8 @@ async function rN(){
 $rl('<div class="ld">Buscando nóminas</div>');
 try{let d,tt;
 if(q&&q.length>=2){const r=await sb2.rpc('buscar_nominas',{termino:q});if(r.error)throw r.error;d=r.data||[];tt=d.length;cache=d;if(srt!=='default')doSort(d);}
-else{const f=(pg-1)*P;const r=await sb2.from('nominas').select('*',{count:'exact'}).order(dbCol(),{ascending:dbAsc(),nullsFirst:false}).range(f,f+P-1);if(r.error)throw r.error;d=r.data||[];tt=r.count||0;rPg(pg,Math.ceil(tt/P));}
-$sr(tt>=1000?(tt/1000).toFixed(0)+'K':tt);$rh(q?`${tt} nómina(s) para <em>"${q}"</em>`:`${tt.toLocaleString()} nóminas`);
+else{const f=(pg-1)*P;const r=await sb2.from('nominas').select('*').order(dbCol(),{ascending:dbAsc(),nullsFirst:false}).range(f,f+P-1);if(r.error)throw r.error;d=r.data||[];tt=d.length;rPg(pg,100);}
+$sr(tt>=1000?(tt/1000).toFixed(0)+'K':tt);$rh(q?`${tt} nómina(s) para <em>"${q}"</em>`:'~1,080,000 nóminas');
 $rl(d.length?d.map(nomC).join(''):'<div class="empty">Sin resultados.</div>');
 }catch(e){$rl(`<div class="empty">Error: ${e.message}</div>`);}}
 
@@ -224,9 +410,7 @@ const AN=[{t:"Conflicto de Interés",i:"Concejo de Regidores",p:"Rafael Antonio 
 {t:"Conflicto de Interés",i:"Dir. Asuntos Jurídicos",p:"Cerise Cristina Bronte Blemings Lamarche",r:"CERISE CRISTINA BRONTE BLEMINGS LAMARCHE",m:1536000,f:"2025",d:"Directora Legal es representante de empresa con RD$1.5M en contrato."},
 {t:"Conflicto de Interés",i:"Metro Santo Domingo",p:"Rl Supply Plus, SRL",r:"ARIEL ALBERTO RODRIGUEZ DE LA ROSA",m:1522216,f:"2025",d:"Coordinador del Metro es representante de empresa con 4 contratos por RD$1.5M."},
 {t:"Conflicto de Interés",i:"Min. Cultura",p:"Galeria De Arte Guernica, SRL",r:"YAMAL NASSER MICHELEN STEFAN",m:1100000,f:"2025",d:"Viceministro de Cultura es representante de galería con 2 contratos por RD$1.1M."},
-// === VIOLACIÓN LEY 200-04 ===
 {t:"Violación Ley 200-04",i:"Policía Nacional",p:"Policía Nacional (todas las sub-unidades)",r:"",m:70000038,f:"2025-12",d:"Policía Nacional publica nómina SIN NOMBRES de empleados. Solo rangos y sueldos. Viola Ley 200-04 Art.3(d). Sentencia TC-0016-14 solo exime a FFAA, no a PN."},
-// === FRACCIONAMIENTO DE CONTRATOS ===
 {t:"Fraccionamiento",i:"Min. Educación",p:"BAING, SRL",r:"",m:36308000,f:"2025-12",d:"20 contratos dic 2025 bajo límite compra directa, RD$36.3M."},
 {t:"Fraccionamiento",i:"Min. Educación",p:"Martínez Torres Traveling, SRL",r:"",m:33475579,f:"2025-12",d:"20 contratos dic 2025, RD$33.5M."},
 {t:"Fraccionamiento",i:"Min. Educación",p:"Inversiones Carafran, SRL",r:"",m:32240643,f:"2025-12",d:"18 contratos dic 2025, RD$32.2M."},
